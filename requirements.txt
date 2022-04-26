@@ -1,0 +1,7 @@
+numpy
+scipy
+matplotlib
+scikit-image
+periodictable
+## nionswift_structure_recognition # github.com/jacobjma/nionswift-structure-recognition
+## fourier_scale_calibration # github.com/jacobjma/fourier-scale-calibration
