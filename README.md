@@ -1,6 +1,6 @@
 # nionswift_atom_manipulator
 
-Single Atom Manipulation Tool for Nion Swift
+Single-atom manipulation tool for Nion Swift
 
 -----
 -----
