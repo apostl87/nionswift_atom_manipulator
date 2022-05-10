@@ -15,10 +15,12 @@ _ = gettext.gettext
 def sub2ind(rows, cols, array_shape):
     return rows * array_shape[1] + cols
 
+
 def ind2sub(array_shape, ind):
     rows = (np.int32(ind) // array_shape[1])
     cols = (np.int32(ind) % array_shape[1])
     return (rows, cols)
+
 
 class AtomManipulatorModule(object):
 
@@ -35,7 +37,8 @@ class AtomManipulatorModule(object):
 
     def fetch_parameters(self):
         raise NotImplementedError()
-        
+
+
 def plot_points(image, points, size=3, color="blue"):
     if points is None:
         return image
@@ -47,6 +50,7 @@ def plot_points(image, points, size=3, color="blue"):
         except IndexError:
             pass
     return image     
+
 
 def plot_paths(image, paths):
     color = (0, 165, 255)
@@ -65,6 +69,7 @@ def plot_paths(image, paths):
             except:
                 pass
     return image
+
 
 def refresh_GUI(manip_obj, var_strings):
     def func():
@@ -89,8 +94,9 @@ def refresh_GUI(manip_obj, var_strings):
                     f"{manip_obj.structure_recognition_module.fov[0]:.2f} x {manip_obj.structure_recognition_module.fov[1]:.2f} Å^2"
                     
     manip_obj.api.queue_task(func)
-    
-# GUI task function for creating a new processed data item without data
+
+
+# GUI task function for creating a new processed data item without data.
 def create_pdi(manip_obj):
     if manip_obj.t1 and manip_obj.t1.is_alive():
         logging.info("Cannot create new data item while AtomManipulator is running")
@@ -109,6 +115,7 @@ def create_pdi(manip_obj):
         refresh_GUI(manip_obj, ['atoms', 'foreigns', 'targets'])
     manip_obj.api.queue_task(func)
 
+
 # GUI task function to be called after new image has been read.
 def init_pdi(manip_obj):
     def func():
@@ -116,7 +123,7 @@ def init_pdi(manip_obj):
             manip_obj.rdy_create_pdi.clear()
             create_pdi(manip_obj)
         while not manip_obj.rdy_create_pdi.wait(1):
-            pass # waiting for creation of pdi
+            pass # waiting for creation of processed_data_item
         manip_obj.processed_data_item.title = _('[LIVE] ') + 'AtomManipulator_' + manip_obj.source_title
         manip_obj.processed_data_item.xdata = copy.deepcopy(manip_obj.source_xdata)
         
@@ -134,8 +141,9 @@ def init_pdi(manip_obj):
 
         manip_obj.rdy_init_pdi.set()
     manip_obj.api.queue_task(func)
-    
-# GUI task function for updating the data in the processed_data_item
+
+
+# GUI task function for updating the data in the processed_data_item.
 def update_pdi(manip_obj, new_data):
     def func():
         if manip_obj.processed_data_item not in manip_obj.api.library.data_items:
@@ -146,8 +154,9 @@ def update_pdi(manip_obj, new_data):
         manip_obj.processed_data_item.data = new_data
         manip_obj.rdy_update_pdi.set()
     manip_obj.api.queue_task(func)
-    
-# Supoort function: Add a listener to "graphic changed" events
+
+
+# Support function: Add a listener to "graphic changed" events.
 def add_listener_graphic_changed(manip_obj, graphic):
     def check_site():
         shape = manip_obj.source_xdata.data_shape
@@ -166,12 +175,13 @@ def add_listener_graphic_changed(manip_obj, graphic):
             pass
     #graphic = manip_obj.api.library.get_data_item_by_uuid(manip_obj.processed_data_item.uuid).graphics[-1]
     manip_obj.listeners.append( graphic._graphic.graphic_changed_event.listen(check_site) )
-    
-# Elemental identification
+
+
+# Elemental identification.
 def elemental_identification(manip_obj):
-    # Calculate intensity values
+    # Calculate intensity values.
     while not manip_obj.rdy_create_pdi.wait(1) or not manip_obj.rdy_init_pdi.wait(1) or not manip_obj.rdy_update_pdi.wait(1):
-        pass # waiting for tasks on pdi to be completed
+        pass # waiting for tasks on processed_data_item to be completed
     
     # Aliases
     sampling = manip_obj.structure_recognition_module.sampling
@@ -179,7 +189,7 @@ def elemental_identification(manip_obj):
     int_radius_A = manip_obj.structure_recognition_module.elemental_id_int_radius
     Z_exponent = manip_obj.structure_recognition_module.elemental_id_exponent
     
-    # Get double Gaussian blur
+    # Get double Gaussian blur.
     if np.isnan(sampling):
         print("Elemental identfication cannot be perfomed, because there is no sampling value [Angstroem/px] available.")
         return
@@ -214,11 +224,12 @@ def elemental_identification(manip_obj):
             graphic.label = label
     manip_obj.api.queue_task(func)
 
+
 def integrate_intensities(data, maxima_locations, integration_radius=1):
     # data ... image data (numpy.ndarray)
     # integration_radius ... (scalar)
     # maxima_locations ... (N x 2 numpy.ndarray)
-    
+
     # Conditioning
     if type(maxima_locations) is not np.ndarray:
         maxima_locations = np.array(maxima_locations)
@@ -227,10 +238,10 @@ def integrate_intensities(data, maxima_locations, integration_radius=1):
     shape = data.shape
     N = maxima_locations.shape[0]
     
-    # Init array for intensity values
+    # Init array for intensity values.
     values = np.full(N, np.nan)
     
-    # Create mask
+    # Create mask.
     integration_radius_floor = math.floor(integration_radius) # integer value; NOT making the area of integration smaller
     M = 2*integration_radius_floor + 1
     mask = np.ones((M, M))
@@ -239,16 +250,16 @@ def integrate_intensities(data, maxima_locations, integration_radius=1):
             if math.sqrt(i**2 + j**2) > integration_radius:
                 mask[i+integration_radius_floor, j+integration_radius_floor] = np.nan
     
-    # Background subtraction
+    # Background subtraction.
     #TODO check
     intensity_min = np.min(data)
     data_shifted = data - intensity_min
     
     for i in range(N):
-        # Location of a maximum
+        # Location of a maximum.
         loc = np.array(maxima_locations[i,:]+0.5, dtype=int) # integer values; pixel position in the image
         
-        # Check if integration range is non-negative and smaller than shape, no try-block
+        # Check if integration range is non-negative and smaller than shape, no try-block.
         lower = loc-integration_radius_floor
         upper = loc+integration_radius_floor+1
         if any(lower < 0) or any(upper > np.array(shape)):
@@ -259,6 +270,7 @@ def integrate_intensities(data, maxima_locations, integration_radius=1):
             values[i] = np.nanmean( tmp*mask )
             
     return values
+
 
 def log_message(input: string):
     return f"Atom Manipulator: {input} "#.center(80, '-')

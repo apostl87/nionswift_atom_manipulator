@@ -1,9 +1,9 @@
 """
-Structure Recognition performed by a deep-learning neural network
-- Identification and separation of pristine lattice and contaminated areas: deep-learning neural network
-- Recognition of atom positions in a 2D material: deep-learning neural network
-- Detection of substitutional heteroatoms (dopants): deep-learning neural network
-- Elemental identification: integration over specific radius ((operational, but this feature almost never works correctly #TODO))
+Structure recognition is performed by a deep convolutional neural network (NN).
+- Identification and separation of pristine lattice and contaminated areas (NN).
+- Recognition of atom positions in a 2D material (NN).
+- Detection of substitutional heteroatoms (ie. dopants) (NN).
+- Elemental identification: integration over specific radius (operational, but almost never works correctly #TODO).
 """
 
 import time
@@ -21,24 +21,24 @@ from . import lib_path_finding
 
 _ = gettext.gettext
    
-# Analysis main function       
+# Analysis main function.
 def analyze_and_show(sr_obj, auto_manipulate=False, live_analysis=False):
     if sr_obj.manip_obj.t1 is not None and sr_obj.manip_obj.t1.is_alive():
             logging.info(lib_utils("Structure recognition still working. Wait until finished"))
             return
         
-    # Aliases
+    # Aliases.
     manip_obj = sr_obj.manip_obj
 
-    # Assign parameters
+    # Assign parameters.
     imgsrc = sr_obj.image_source_combo_box.current_item[0:5].upper()
     if auto_manipulate:
         sr_obj.stop_live_analysis_event.clear()
         live_analysis = False
         if imgsrc == "SELEC":
-            imgsrc = "FIRST" # Correct that if user has not changed "Image source"
+            imgsrc = "FIRST" #Correct that if user has not changed "Image source"
         
-    # Create processed data item if none exists        
+    # Create processed data item if none exists.
     if manip_obj.processed_data_item is None or manip_obj.processed_data_item not in manip_obj.api.library.data_items:
         manip_obj.rdy_create_pdi.clear()
         lib_utils.create_pdi(manip_obj)
@@ -52,10 +52,11 @@ def analyze_and_show(sr_obj, auto_manipulate=False, live_analysis=False):
                     sr_obj.stop_live_analysis_event.set()
 
                 wait_time = 2
-                if manip_obj.rdy_create_pdi.wait(wait_time): # wait for a maximum of {wait_time} seconds
+                if manip_obj.rdy_create_pdi.wait(wait_time): # wait for a maximum of {wait_time} seconds.
                     pass
                 else:
-                    logging.info(lib_utils.log_message("Waiting for UI thread for more than {wait_time} seconds. Consider code performance issue or a crashed thread."))
+                    logging.info(lib_utils.log_message("Waiting for UI thread for more than {wait_time} seconds."
+                                                       "Possible code performance issue or a crashed thread."))
              
                 if auto_manipulate:
                     if not manip_obj.tractor_beam_module.rdy.wait(0.1):
@@ -70,11 +71,11 @@ def analyze_and_show(sr_obj, auto_manipulate=False, live_analysis=False):
                     manip_obj.source_title = tdi.title
                     manip_obj.scan_parameters_changed = True
                 else:
-                    logging.info(lib_utils.log_message("Grabbing next stem image ..."))
+                    logging.info(lib_utils.log_message("Grabbing next STEM image ..."))
                     if (not manip_obj.superscan.is_playing and not live_analysis) or auto_manipulate:
-                        # start and stop scanning when these conditions are met
+                        # Start and stop scanning when these conditions are met.
                         manip_obj.superscan.start_playing()
-                        time.sleep(0.05) # a small amount of time is necessary due to a delayed response of the Nion Swift core code
+                        time.sleep(0.05) # Small delay is necessary due to a delayed response of the Nion Swift code.
                         manip_obj.superscan.stop_playing()
                         
                     last_record = manip_obj.superscan.grab_next_to_finish()
@@ -96,9 +97,9 @@ def analyze_and_show(sr_obj, auto_manipulate=False, live_analysis=False):
                             break
                         
                 if auto_manipulate:
-                    sr_obj.new_image.set() # for TractorBeam module
+                    sr_obj.new_image.set() # For TractorBeam module.
                     
-                # aliases
+                # Aliases.
                 pdi = manip_obj.processed_data_item
                 shape = np.array(manip_obj.source_xdata.data_shape)
 
@@ -107,7 +108,7 @@ def analyze_and_show(sr_obj, auto_manipulate=False, live_analysis=False):
                     sr_obj.stop_live_analysis_event.set()
                     break
                 
-                # Space Calibration
+                # Calibrates the image scale based on a Fourier transform of the lattice.
                 if sr_obj.scale_calibration_mode == 1:
                     t = time.time()
                     logging.info(lib_utils.log_message("FourierSpaceCalibrator called."))
@@ -119,12 +120,12 @@ def analyze_and_show(sr_obj, auto_manipulate=False, live_analysis=False):
                     t = time.time()-t
                     logging.info(lib_utils.log_message(f"FourierSpaceCalibrator finished after {t:.5f} seconds."))
                 else:
-                    # sr_obj.sampling must have been written before
+                    # sr_obj.sampling must have been written before.
                     if sr_obj.sampling is None:
-                        logging.info(lib_utils.log_message("Saved value for 'sampling' is None. Stopping structure recognition ..."))
-                        return None # Stop manipulator
+                        logging.info(lib_utils.log_message("Saved value for 'sampling' is None. Stopping..."))
+                        return None # Stop manipulator.
 
-                # Call Deep-Learning convolutional neural network
+                # Call deep convolutional neural network.
                 t = time.time()
                 logging.info(lib_utils.log_message("Structure recognition called."))
                 
@@ -134,7 +135,7 @@ def analyze_and_show(sr_obj, auto_manipulate=False, live_analysis=False):
                 logging.info(lib_utils.log_message(f"Structure recognition finished after {t:.5f} seconds."))
 
                 manip_obj.rdy_init_pdi.clear()
-                lib_utils.init_pdi(manip_obj) # This is done here to give the user a possibility to look at the paths
+                lib_utils.init_pdi(manip_obj) # This is done here to give the user a possibility to look at the paths.
 
                 # Conditioning NN output
                 if sr_obj.nn_output is not None:
@@ -146,7 +147,7 @@ def analyze_and_show(sr_obj, auto_manipulate=False, live_analysis=False):
                     
                 logging.info(lib_utils.log_message(f"{number_maxima:d} atoms were found."))
                 
-                # Calling object-oriented backend, draw atom positions and bonds
+                # Call object-oriented backend to draw atom positions and bonds.
                 t = time.time()
                 manip_obj.sites = []
                 manip_obj.paths = []
@@ -155,7 +156,7 @@ def analyze_and_show(sr_obj, auto_manipulate=False, live_analysis=False):
                     manip_obj.sites.append( aab.Site(
                         loc[0], loc[1], site_id=i) )
                         
-                # Refresh GUI
+                # Refresh GUI.
                 lib_utils.refresh_GUI(manip_obj, ['atoms', 'sampling'])
                 t = time.time()-t
                 logging.info(lib_utils.log_message(f"Setting sites (back end) finished after {t:.5f} seconds."))
@@ -168,11 +169,11 @@ def analyze_and_show(sr_obj, auto_manipulate=False, live_analysis=False):
                     manip_obj.rdy_update_pdi.clear()
                     lib_utils.update_pdi(manip_obj, tmp_image)
        
-                # Try to keep target sites and foreign atoms till the next frame
+                # Try to keep target sites and foreign atoms till the next frame.
                 if manip_obj.scan_parameters_changed: # re-init
                     clear_user_defined_atoms_and_targets(manip_obj)
                 
-                else: # Reposition foreign atoms, target sites and the corresponding graphics
+                else: # Reposition foreign atoms, target sites and the corresponding graphics.
                     
                     all_coords = np.full((len(manip_obj.sites), 2), np.nan)
                     if len(manip_obj.sources) > 0 or len(manip_obj.targets) > 0:
@@ -181,7 +182,7 @@ def analyze_and_show(sr_obj, auto_manipulate=False, live_analysis=False):
                     else:
                         pass
                        
-                    # Target sites
+                    # Target sites.
                     graphics_pos = np.full((len(manip_obj.targets), 2), np.nan)
                     for i, target in enumerate(manip_obj.targets):
                         graphics_pos[i, :] = target.graphic.center
@@ -200,7 +201,7 @@ def analyze_and_show(sr_obj, auto_manipulate=False, live_analysis=False):
                                 target.graphic.center = target.coords / shape
                     manip_obj.api.queue_task(reposition_target_site_graphics)
                      
-                    # Foreign atoms (only user-defined)
+                    # Foreign atoms (only user-defined).
                     atoms_user_def = []
                     for atom in manip_obj.sources:
                         if atom.defined_by_user: atoms_user_def.append(atom)
@@ -225,14 +226,15 @@ def analyze_and_show(sr_obj, auto_manipulate=False, live_analysis=False):
                     
                     t = time.time()-t
                     #devel anchor
-                    logging.info(lib_utils.log_message(f"Repositioning of foreign atoms, target sites, and graphics finished after {t:.5f} seconds."))
+                    logging.info(lib_utils.log_message(f"Repositioning of foreign atoms, target sites, "
+                                                       f"and graphics finished after {t:.5f} seconds."))
                 
-                # Auto-Detection of sources
+                # Auto-detect of sources.
                 func_auto_detect_foreign_atoms(sr_obj)
-                sr_obj.rdy.set() # Signal that this is ready
+                sr_obj.rdy.set() # Signal that this is ready.
                 #print("why error when deleting a data item")
                 
-                # Integrate path finder in live analysis
+                # Integrate path finder in live analysis.
                 if live_analysis and (len(manip_obj.sources)>=0 and len(manip_obj.targets)>=0):
                     lib_path_finding.find_paths(manip_obj)
                 
@@ -248,7 +250,7 @@ def create_site_and_connect_to_point_region(manip_obj, loc, site_id, point_regio
     manip_obj.sites[-1].graphic = point_region
     point_region.site = manip_obj.sites[-1]
             
-# Auto-detect and display foreign_atoms
+# Auto-detect and display foreign atoms.
 def func_auto_detect_foreign_atoms(sr_obj):
     # aliases
     manip_obj = sr_obj.manip_obj
@@ -256,7 +258,7 @@ def func_auto_detect_foreign_atoms(sr_obj):
     pdi = manip_obj.processed_data_item
     shape = manip_obj.source_xdata.data_shape
     
-    # Delete old auto-detected sources
+    # Delete old auto-detected sources.
     atoms = copy.copy(manip_obj.sources)
     for atom in atoms:
         if not atom.defined_by_user:
@@ -271,7 +273,7 @@ def func_auto_detect_foreign_atoms(sr_obj):
     number_foreigns = len(foreigns_site_id)
     
     while not manip_obj.rdy_update_pdi.wait(1):
-        logging.info(lib_utils.log_message("Waiting for an update of the processed data item ..."))
+        logging.info(lib_utils.log_message("Waiting for an update of the processed data item..."))
         pass
     
     new_centers = []    
@@ -311,7 +313,7 @@ def func_auto_detect_foreign_atoms(sr_obj):
                 pdi.remove_region(rra[k])
         manip_obj.api.queue_task(func)
     
-    def do_this(): # The following is theaded, because it is not needed for later processes
+    def do_this(): # The following is threaded, because it is not needed for later processes.
         lib_utils.refresh_GUI(manip_obj, ['foreigns'])
         lib_utils.elemental_identification(manip_obj)
     threading.Thread(target=do_this).start()
@@ -330,5 +332,5 @@ def clear_user_defined_atoms_and_targets(manip_obj):
     manip_obj.sources = []
     manip_obj.targets = []
 
-    logging.info(lib_utils.log_message("Cleared all user-defined foreign atoms and target sites"))
+    logging.info(lib_utils.log_message("Cleared all user-defined foreign atoms and target sites."))
     lib_utils.refresh_GUI(manip_obj, ['foreigns', 'targets'])

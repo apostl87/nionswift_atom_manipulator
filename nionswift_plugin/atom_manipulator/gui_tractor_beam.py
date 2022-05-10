@@ -45,7 +45,7 @@ class TractorBeamModule(AtomManipulatorModule):
         adc_row, self.adc_check_box = check_box_template(self.ui, 'Auto-detect changes')
         self.adc_check_box.checked = defaults['auto_detect_changes']
         
-        # Line edits
+        # Row edits.
         frame_timeout_row, self.frame_timeout_line_edit = line_edit_template(self.ui, 'Tractor time [s]')
         reposition_timeout_row, self.reposition_timeout_line_edit = line_edit_template(self.ui, 'Reposition timeout [s]')
         jump_threshold_row, self.jump_threshold_line_edit = line_edit_template(self.ui, 'Auto-detect jump threshold [%]')
@@ -87,7 +87,7 @@ class TractorBeamModule(AtomManipulatorModule):
                     self.drift_threshold_line_edit.text = f"{self.drift_threshold:.2f}"
         self.drift_threshold_line_edit.on_editing_finished = drift_threshold_editing_finished            
         
-        # Buttons
+        # Buttons.
         onbutton = self.ui.create_push_button_widget(_("Start"))
         def onbutton_clicked():
             logging.info(lib_utils.log_message("Starting TractorBeam"))
@@ -111,7 +111,7 @@ class TractorBeamModule(AtomManipulatorModule):
         startstop_button_row.add(onbutton)
         startstop_button_row.add(offbutton)
         
-        # Presets
+        # Presets.
         preset_row, self.preset_combo_box = combo_box_template(
             self.ui, 'Preset', ['55 kV', '60 kV'], indent=False)
         def set_preset(name):
@@ -121,7 +121,7 @@ class TractorBeamModule(AtomManipulatorModule):
             drift_threshold_editing_finished(presets[name]['drift_threshold'])
         self.preset_combo_box.on_current_item_changed = set_preset
         
-        # Defaults
+        # Defaults.
         self.preset_combo_box.current_item = '60 kV' 
     
         self.section.column.add(otm_row)

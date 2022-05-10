@@ -9,9 +9,8 @@ from . import lib_utils
 
 _ = gettext.gettext
 
-defaults = { 'snapshot': True
-           }
-    
+defaults = { 'snapshot': True}
+
 class ManipulationModule(lib_utils.AtomManipulatorModule):
 
     def __init__(self, ui, api, document_controller, manipulator_object=None):
@@ -24,19 +23,19 @@ class ManipulationModule(lib_utils.AtomManipulatorModule):
         self.section = Section(self.ui, 'Manipulation')
         column.add(self.section)
         
-        # Callback functions
+        # Callback functions.
         def snapshot_changed(checked):
             self.snapshot_row_checkbox.checked = checked
             self.snapshot = checked
         
-        # GUI elements
+        # GUI elements.
         snapshot_row = self.ui.create_row_widget()
         self.snapshot_row_checkbox = self.ui.create_check_box_widget(_("Snapshot every frame (1x raw, 1x w/ insets"))
         self.snapshot_row_checkbox.on_checked_changed = snapshot_changed
         snapshot_row.add_spacing(10)
         snapshot_row.add(self.snapshot_row_checkbox)
         
-        # Button Start/Stop
+        # Button for Start/Stop.
         automanip_button = self.ui.create_push_button_widget(_("Start automatical manipulation"))
         automanip_button.state = False
         def automanip_button_clicked():
@@ -50,17 +49,17 @@ class ManipulationModule(lib_utils.AtomManipulatorModule):
                 self.stop_auto_manipulate_event.clear()
                 
                 ## Call modules
-                # Structure recognition
+                # Structure recognition.
                 if self.snapshot: self.manip_obj.snapshot_counter = 1
                 else: self.manip_obj.snapshot_counter = None
                 lib_structure_recognition.analyze_and_show(self.manip_obj.structure_recognition_module, auto_manipulate=True)
 
-                # Path finding
+                # Pathfinding.
                 lib_path_finding.find_paths(self.manip_obj, auto_manipulate=True)
                 
-                # Tractor beam
+                # Tractor beam.
                 try:
-                    # Communication events
+                    # Communication events.
                     comm_events = [self.manip_obj.structure_recognition_module.new_image,
                                    self.manip_obj.path_finding_module.rdy,
                                    self.manip_obj.tractor_beam_module.rdy]
@@ -78,7 +77,7 @@ class ManipulationModule(lib_utils.AtomManipulatorModule):
                     logging.info(lib_utils.log_message("Exception when calling adf_feedback"))
                     print(exc)
 
-                ## Change button text
+                # Change button text.
                 automanip_button.text = _('Stop Auto-Manipulator')
             else:
                 self.stop_auto_manipulate_event.set()
@@ -87,9 +86,9 @@ class ManipulationModule(lib_utils.AtomManipulatorModule):
         automanip_button_row = self.ui.create_row_widget()
         automanip_button_row.add(automanip_button)
         
-        # Defaults
+        # Defaults.
         snapshot_changed(defaults['snapshot'])
         
-        # Assemble GUI elements
+        # Assemble GUI elements.
         self.section.column.add(snapshot_row)
         self.section.column.add(automanip_button_row)

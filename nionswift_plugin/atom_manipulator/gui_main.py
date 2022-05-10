@@ -35,18 +35,18 @@ class AtomManipulatorDelegate:
         self.scan_parameters_changed = None
         self.snapshot_counter = None
         
-        # Objects that are used by this plug-in
+        # Nion Swift objects that are used by this plug-in.
         self.source_xdata = None
         self.processed_data_item = None
         
-        # Objects for the plug-in only
+        # Objects internal to the plug-in.
         self.sites = []
         self.sources = []
         self.targets = []
         self.bonds = None
         self.paths = None
         
-        # Workaround: Reposition graphics
+        # Workaround: Reposition graphics.
         self.listeners = []
         self.point_regions = []
         self.line_regions = []
@@ -54,12 +54,12 @@ class AtomManipulatorDelegate:
         self.rectangle_regions_auto = []
         self.ellipse_regions = []
         
-        # Threads
+        # Threads.
         self.t1 = None
         self.t5 = None
         self.t6 = None
         
-        # Events
+        # Events.
         self.sr_rdy = threading.Event()
         self.pf_rdy = threading.Event()
         self.tb_rdy = threading.Event()
@@ -87,7 +87,7 @@ class AtomManipulatorDelegate:
         self.ui = ui
         self.document_controller = document_controller
         
-        # Callback functions
+        # Callback functions.
         def simulation_mode_changed(checked):
             self.superscan = self.api.get_hardware_source_by_id(devices_dict[checked], "1")
             self.simulation_mode_checkbox.checked = checked
@@ -95,12 +95,12 @@ class AtomManipulatorDelegate:
         def create_new_data_item_clicked():
             lib_utils.create_pdi(self)
 
-        # GUI init
+        # GUI init.
         main_col = ui.create_column_widget()
         scroll_area = ScrollArea(ui._ui)
         scroll_area.content = main_col._widget
         
-        # GUI elements
+        # GUI elements.
         feature_row, self.data_item_button = push_button_template(
             self.ui, _("Create new data item"), callback=create_new_data_item_clicked)
         feature_row.add_stretch()
@@ -109,13 +109,13 @@ class AtomManipulatorDelegate:
         self.simulation_mode_checkbox.on_checked_changed = simulation_mode_changed
         feature_row.add(self.simulation_mode_checkbox)
         
-        # Modules
+        # Modules.
         self.structure_recognition_module = StructureRecognitionModule(self.ui, self.api, self.document_controller, self)
         self.path_finding_module = PathFindingModule(self.ui, self.api, self.document_controller, self)
         self.tractor_beam_module = TractorBeamModule(self.ui, self.api, self.document_controller, self)
         self.manipulation_module = ManipulationModule(self.ui, self.api, self.document_controller, self)
         
-        # Building main column
+        # Build main column.
         main_col.add_spacing(5)
         main_col.add(feature_row)
         self.structure_recognition_module.create_widgets(main_col)
@@ -124,7 +124,7 @@ class AtomManipulatorDelegate:
         self.manipulation_module.create_widgets(main_col)
         main_col.add_stretch()
         
-        # Set defaults
+        # Set defaults.
         simulation_mode_changed(defaults['simulation_mode'])
         
         #return main_col
@@ -132,17 +132,17 @@ class AtomManipulatorDelegate:
         
 
 class AtomManipulatorExtension(object):
-    # required for Nion Swift to recognize this as an extension class.
+    # Required for Nion Swift to recognize this as an extension class.
     extension_id = "nion.swift.extension.atom_manipulator"
     
     def __init__(self, api_broker):
-        # grab the api object.
+        # Grab the API object.
         api = api_broker.get_api(version='~1.0', ui_version='~1.0')
-        # be sure to keep a reference or it will be closed immediately.
+        # Be sure to keep a reference or it will be closed immediately.
         self.__panel_ref = api.create_panel(AtomManipulatorDelegate(api))
   
     def close(self):
-        # close will be called when the extension is unloaded. in turn, close any references so they get closed. this
-        # is not strictly necessary since the references will be deleted naturally when this object is deleted.
+        # Close will be called when the extension is unloaded. In turn, close any references so they get closed.
+        # This is not strictly necessary since the references will be deleted naturally when this object is deleted.
         self.__panel_ref.close()
         self.__panel_ref = None 

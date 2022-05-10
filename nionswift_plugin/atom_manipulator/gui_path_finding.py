@@ -14,26 +14,26 @@ class PathFindingModule(AtomManipulatorModule):
     def __init__(self, ui, api, document_controller, manipulator_object):
         super().__init__(ui, api, document_controller)
         self.manip_obj = manipulator_object
-        self.max_bond_length = None # Internally Nion Swift calculates in nm
+        self.max_bond_length = None # Internally Nion Swift calculates in nm.
         self.rdy = threading.Event()
 
     def create_widgets(self, column):
         section = Section(self.ui, 'Path Finding')
         column.add(section)
 
-        # Buttons for adding and removing foreign atoms and target sites
+        # Buttons for adding and removing foreign atoms and target sites.
         def toggle_button1_text():
             while True:
-                yield _('Add')#' foreign atoms')
-                yield _('Stop adding')#' adding foreign atoms')
+                yield _('Add') #' foreign atoms')
+                yield _('Stop adding') #' adding foreign atoms')
         def toggle_button2_text():
             while True:
                 yield _('Remove')
                 yield _('Stop removing')
         def toggle_button3_text():
             while True:
-                yield _('Add')#'target sites')
-                yield _('Stop adding')#'adding target sites')
+                yield _('Add') #'target sites')
+                yield _('Stop adding') #'adding target sites')
         def toggle_button4_text():
             while True:
                 yield _('Remove')
@@ -77,11 +77,11 @@ class PathFindingModule(AtomManipulatorModule):
             self.add_remove_buttons[button_idx].state = not self.add_remove_buttons[button_idx].state
             lib_path_finding.add_or_remove_foreign_atoms_or_target_sites(self.manip_obj, mode=button_idx, startstop=self.add_remove_buttons[button_idx].state)
 
-        # Labels
+        # Labels.
         self.N_foreign_atoms_label = self.ui.create_label_widget('0')
         self.N_target_sites_label = self.ui.create_label_widget('0')
         
-        # GUI rows for foreign atoms and target sites
+        # GUI rows for foreign atoms and target sites.
         foreign_atoms_row = self.ui.create_row_widget()
         foreign_atoms_row.add(self.ui.create_label_widget(_('Foreign atoms: ')))
         foreign_atoms_row.add(self.N_foreign_atoms_label)
@@ -96,7 +96,7 @@ class PathFindingModule(AtomManipulatorModule):
         target_sites_row.add(self.remove_target_sites_button)
         target_sites_row.add_stretch()
         
-        # Other rows
+        # Other rows.
         max_bond_length_row, self.max_bond_length_line_edit = line_edit_template(self.ui, 'Max. bond length [A]')
         def max_bond_length_editing_finished(text):
             if len(text) > 0:
@@ -110,13 +110,13 @@ class PathFindingModule(AtomManipulatorModule):
         def find_paths_clicked():
             lib_path_finding.find_paths(self.manip_obj)
         self.find_paths_button.on_clicked = find_paths_clicked
-        self.move_probe_button = self.ui.create_push_button_widget('Move probe')#' to the next demanded position')
+        self.move_probe_button = self.ui.create_push_button_widget('Move probe') # to the next demanded position')
         def move_probe_clicked():
             lib_path_finding.move_probe(self.manip_obj)
         self.move_probe_button.on_clicked = move_probe_clicked
         find_paths_row.add(self.move_probe_button)
         
-        # Set defaults
+        # Set defaults.
         max_bond_length_editing_finished(str(defaults['max_bond_length']))
         
         # section.column.add(model_row)

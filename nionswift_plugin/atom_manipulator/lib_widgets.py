@@ -1,4 +1,4 @@
-# Special thanks for providing the code base for this go to J. Madsen (jacobjma@github)
+# Special thanks for providing the code base for this go to J. Madsen (jacobjma@github).
 
 from nion.ui import Widgets
 

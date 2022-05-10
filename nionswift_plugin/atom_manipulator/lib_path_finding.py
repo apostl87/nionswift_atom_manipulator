@@ -1,6 +1,6 @@
 """
-Path finding
-- Determines shortest total path from sources to targets 
+Pathfinding algorithm.
+- Determines the shortest total path from all sources to all targets.
 """
 
 import copy
@@ -12,13 +12,13 @@ from .classes import atoms_and_bonds as aab, paths
 from nion.utils import Geometry
 from . import lib_utils
 
-# Path finding
+# Pathfinding
 def find_paths(manip_obj, auto_manipulate=False):
     if (manip_obj.sites == []) and not auto_manipulate: # or (manip_obj.targets is None):
-            logging.info(lib_utils.log_message("No sites found. Path finder aborted."))
+            logging.info(lib_utils.log_message("No sites found. Pathfinder aborted."))
             return
     if manip_obj.t5 is not None and manip_obj.t5.is_alive():
-            logging.info(lib_utils.log_message("Path finder still working. Wait until finished."))
+            logging.info(lib_utils.log_message("Pathfinder still working. Wait until finished."))
             return 
     
     def thread_this():
@@ -37,7 +37,7 @@ def find_paths(manip_obj, auto_manipulate=False):
             
             # Set bonds
             t = time.time()
-            logging.info(lib_utils.log_message("Setting bonds ..."))
+            logging.info(lib_utils.log_message("Setting bonds..."))
             max_bond_length_px = manip_obj.source_xdata.dimensional_calibrations[0].convert_from_calibrated_size(
                     manip_obj.path_finding_module.max_bond_length/10)
             if manip_obj.simulation_mode:
@@ -49,7 +49,7 @@ def find_paths(manip_obj, auto_manipulate=False):
             
             # Call path finder
             t = time.time()
-            logging.info(lib_utils.log_message("Path finder called."))
+            logging.info(lib_utils.log_message("Pathfinder called."))
             
             try:
                 manip_obj.paths = paths.Paths(manip_obj.sources, manip_obj.targets)
@@ -68,19 +68,19 @@ def find_paths(manip_obj, auto_manipulate=False):
             lib_utils.update_pdi(manip_obj, tmp_image)
     
             t = time.time()-t
-            logging.info(lib_utils.log_message(f"Path finder finished after {t:.5f} seconds"))
+            logging.info(lib_utils.log_message(f"Pathfinder finished after {t:.5f} seconds"))
             
             if auto_manipulate:
                 move_probe(manip_obj)
             manip_obj.path_finding_module.rdy.set()
 
         if auto_manipulate:
-            logging.info(lib_utils.log_message("Path finder stopped."))
+            logging.info(lib_utils.log_message("Pathfinder stopped."))
         
     manip_obj.t5 = threading.Thread(target = thread_this)
     manip_obj.t5.start()
 
-# Add foreign atoms or targets with grabbing the mouse cursor
+# Add foreign atoms or targets with grabbing the mouse cursor.
 def add_or_remove_foreign_atoms_or_target_sites(manip_obj, mode=None, startstop=False):
     # Modes:
     # 0 ... Add foreign atoms
@@ -113,7 +113,7 @@ def add_or_remove_foreign_atoms_or_target_sites(manip_obj, mode=None, startstop=
         dc._document_controller.selected_display_panel.canvas_widget.on_mouse_clicked = manip_obj.original_mouse_clicked
 
 def add_atom_or_site_near_image_point(manip_obj, image_point, mode):
-    # Find nearest atom site
+    # Find nearest atom site.
     if manip_obj.sites:
         all_coords = map(lambda x: x.coords, manip_obj.sites)
         nearest_site = manip_obj.sites[ np.linalg.norm(
@@ -131,12 +131,12 @@ def add_atom_or_site_near_image_point(manip_obj, image_point, mode):
             manip_obj.sources[-1].graphic = manip_obj.rectangle_regions[-1]
             lib_utils.add_listener_graphic_changed(manip_obj, manip_obj.sources[-1].graphic)
         elif mode == 2:
-            # Add target site
+            # Add target site.
             manip_obj.targets.append( nearest_site )
-            # Insert region
+            # Insert region.
             manip_obj.ellipse_regions.append( manip_obj.processed_data_item.add_ellipse_region(
                 nearest_site.coords[0]/shape[0], nearest_site.coords[1]/shape[1], relative_size, relative_size))
-            # Mutual assignment
+            # Mutual assignment.
             manip_obj.ellipse_regions[-1].site = nearest_site
             manip_obj.targets[-1].graphic = manip_obj.ellipse_regions[-1]
             lib_utils.add_listener_graphic_changed(manip_obj, manip_obj.targets[-1].graphic)
@@ -146,13 +146,13 @@ def add_atom_or_site_near_image_point(manip_obj, image_point, mode):
 def remove_atom_or_site_near_image_point(manip_obj, image_point, mode):
     if mode == 1:
         if manip_obj.sources:
-            # Find nearest foreign atom
+            # Find nearest foreign atom.
             all_coords = map(lambda x: x.site.coords, manip_obj.sources)
             nearest_source = manip_obj.sources[ np.linalg.norm(
                 np.array(list(all_coords))-image_point, axis=1).argmin() ]
-            # Remove foreign atom
+            # Remove foreign atom.
             manip_obj.sources.remove(nearest_source)
-            # Remove region
+            # Remove region.
             try:
                 manip_obj.rectangle_regions.remove(nearest_source.graphic)
             except:
@@ -162,13 +162,13 @@ def remove_atom_or_site_near_image_point(manip_obj, image_point, mode):
             logging.info(lib_utils.log_message("No foreign atoms found."))
     if mode == 3:
         if manip_obj.targets:
-            # Find nearest target site
+            # Find nearest target site.
             all_coords = map(lambda x: x.coords, manip_obj.targets)
             nearest_target = manip_obj.targets[ np.linalg.norm(
                 np.array(list(all_coords))-image_point, axis=1).argmin() ]
-            # Remove foreign atom
+            # Remove foreign atom.
             manip_obj.targets.remove(nearest_target)
-            # Remove region
+            # Remove region.
             manip_obj.ellipse_regions.remove(nearest_target.graphic)
             manip_obj.processed_data_item.remove_region(nearest_target.graphic)
         else:
@@ -176,7 +176,7 @@ def remove_atom_or_site_near_image_point(manip_obj, image_point, mode):
     
 # Set probe position
 def move_probe(manip_obj):
-    # Choose next path that is longer than 1 site (1 site >=> atom is already at target site)
+    # Choose next path that is longer than 1 site (1 site >=> atom is already at target site).
     if not hasattr(manip_obj.paths, 'members'):
         logging.info(lib_utils.log_message("No paths found. Probe not repositioned."))
     yx = None
