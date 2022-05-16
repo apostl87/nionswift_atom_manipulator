@@ -27,13 +27,13 @@ defaults = {'offline_test_mode': False, 'auto_detect_changes': True}
     
 class TractorBeamModule(AtomManipulatorModule):
 
-    def __init__(self, ui, api, document_controller, manipulator_object=None):
+    def __init__(self, ui, api, document_controller, manipulator=None):
         super().__init__(ui, api, document_controller)
         self.frame_timeout = None
         self.reposition_timeout = None
         self.jump_threshold = None
         self.drift_threshold = None
-        self.manip_obj = manipulator_object
+        self.manipulator = manipulator
         self.rdy = threading.Event()
 
     def create_widgets(self, column):

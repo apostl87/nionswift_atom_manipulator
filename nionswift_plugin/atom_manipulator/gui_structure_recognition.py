@@ -22,7 +22,7 @@ defaults = {'visualize_atoms': True,
     
 class StructureRecognitionModule(AtomManipulatorModule):
 
-    def __init__(self, ui, api, document_controller, manipulator_object):
+    def __init__(self, ui, api, document_controller, manipulator):
         super().__init__(ui, api, document_controller)
         self.auto_detect_foreign_atoms = None
         self.elemental_id_int_radius = None
@@ -34,7 +34,7 @@ class StructureRecognitionModule(AtomManipulatorModule):
         self.visualize_atoms = None
         self.live_analysis = None
         self.was_playing = None
-        self.manip_obj = manipulator_object
+        self.manipulator = manipulator # AtomManipulatorDelegate object
         self.stop_live_analysis_event = threading.Event()
         self.rdy = threading.Event()
         self.new_image = threading.Event()
@@ -71,12 +71,12 @@ class StructureRecognitionModule(AtomManipulatorModule):
                 self.scale_calibration_mode = 1
                 self.sampling = None
                 self.fov = None
-                lib_utils.refresh_GUI(self.manip_obj, ['sampling'])
+                lib_utils.refresh_GUI(self.manipulator, ['sampling'])
 
         def scale_calibration_button_clicked():
             
             # Calculate target values that directly follow from Nion Swift Scan settingsi.
-            tdi = self.manip_obj.document_controller.target_data_item
+            tdi = self.manipulator.document_controller.target_data_item
             fov_1d_target_value_nm = tdi.metadata['scan']['fov_nm']
             sampling_target_value = fov_1d_target_value_nm*10/np.sqrt(tdi.data.size)
             min_sampling = sampling_target_value*.75
@@ -99,10 +99,10 @@ class StructureRecognitionModule(AtomManipulatorModule):
                 logging.info(lib_utils.log_message(f"RealSpaceCalibrator finished after {t:.5f} seconds"))
                 
                 self.fov = [self.sampling*s for s in tdi.data.shape]
-                lib_utils.refresh_GUI(self.manip_obj, ['sampling'])
+                lib_utils.refresh_GUI(self.manipulator, ['sampling'])
             
-            self.manip_obj.t6 = threading.Thread(target = func_task, name = 'RealSpaceCalibrator')
-            self.manip_obj.t6.start()
+            self.manipulator.t6 = threading.Thread(target = func_task, name = 'RealSpaceCalibrator')
+            self.manipulator.t6.start()
             
         self.scale_calibration_combo_box.on_current_item_changed = scale_calibration_mode_changed
         scale_calibration_row.add(scale_calibration_button_container)
@@ -202,14 +202,14 @@ class StructureRecognitionModule(AtomManipulatorModule):
                 self.stop_live_analysis_event.clear()
                 lib_structure_recognition.analyze_and_show(self, live_analysis=False)
             elif state == 2: # Start live analysis.
-                self.was_playing = self.manip_obj.superscan.is_playing
+                self.was_playing = self.manipulator.superscan.is_playing
                 self.stop_live_analysis_event.clear()
                 lib_structure_recognition.analyze_and_show(self, live_analysis=True)
             elif state == 3: # Stop live analysis.
                 if self.was_playing == False:
-                    self.manip_obj.superscan.stop_playing()
+                    self.manipulator.superscan.stop_playing()
                 self.stop_live_analysis_event.set()
-                self.manip_obj.superscan.stop_playing()
+                self.manipulator.superscan.stop_playing()
             start_stop_analysis_button_next_state(state)
 
         # Change the functionality and appearance of the button.

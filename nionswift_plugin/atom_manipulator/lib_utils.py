@@ -71,97 +71,97 @@ def plot_paths(image, paths):
     return image
 
 
-def refresh_GUI(manip_obj, var_strings):
+def refresh_GUI(manipulator, var_strings):
     def func():
         if 'atoms' in var_strings:
-            manip_obj.structure_recognition_module.N_atoms_label.text = str(len(manip_obj.sites))
+            manipulator.structure_recognition_module.N_atoms_label.text = str(len(manipulator.sites))
         if 'foreigns' in var_strings:
-            manip_obj.path_finding_module.N_foreign_atoms_label.text = str(len(manip_obj.sources))
+            manipulator.path_finding_module.N_foreign_atoms_label.text = str(len(manipulator.sources))
         if 'targets' in var_strings:
-            manip_obj.path_finding_module.N_target_sites_label.text = str(len(manip_obj.targets))
+            manipulator.path_finding_module.N_target_sites_label.text = str(len(manipulator.targets))
         if 'sampling' in var_strings:
-            if manip_obj.structure_recognition_module.sampling is None:
-                manip_obj.structure_recognition_module.sampling_label.text = \
+            if manipulator.structure_recognition_module.sampling is None:
+                manipulator.structure_recognition_module.sampling_label.text = \
                     f"N/A"
             else:
-                manip_obj.structure_recognition_module.sampling_label.text = \
-                    f"{manip_obj.structure_recognition_module.sampling:4f} Å/px"
-            if manip_obj.structure_recognition_module.fov is None:
-                manip_obj.structure_recognition_module.fov_label.text = \
+                manipulator.structure_recognition_module.sampling_label.text = \
+                    f"{manipulator.structure_recognition_module.sampling:4f} Å/px"
+            if manipulator.structure_recognition_module.fov is None:
+                manipulator.structure_recognition_module.fov_label.text = \
                     f"N/A"
             else:
-                manip_obj.structure_recognition_module.fov_label.text = \
-                    f"{manip_obj.structure_recognition_module.fov[0]:.2f} x {manip_obj.structure_recognition_module.fov[1]:.2f} Å^2"
+                manipulator.structure_recognition_module.fov_label.text = \
+                    f"{manipulator.structure_recognition_module.fov[0]:.2f} x {manipulator.structure_recognition_module.fov[1]:.2f} Å^2"
                     
-    manip_obj.api.queue_task(func)
+    manipulator.api.queue_task(func)
 
 
 # GUI task function for creating a new processed data item without data.
-def create_pdi(manip_obj):
-    if manip_obj.t1 and manip_obj.t1.is_alive():
+def create_pdi(manipulator):
+    if manipulator.t1 and manipulator.t1.is_alive():
         logging.info("Cannot create new data item while AtomManipulator is running")
         return None
     dummy_data = np.zeros((1,1,3), dtype=np.uint8)
-    xdata = manip_obj.api.create_data_and_metadata(dummy_data)
+    xdata = manipulator.api.create_data_and_metadata(dummy_data)
     def func():
         try:
-            manip_obj.processed_data_item.title = manip_obj.processed_data_item.title[7:]
+            manipulator.processed_data_item.title = manipulator.processed_data_item.title[7:]
         except:
             pass                                                                       
-        manip_obj.processed_data_item = manip_obj.document_controller.create_data_item_from_data_and_metadata(
+        manipulator.processed_data_item = manipulator.document_controller.create_data_item_from_data_and_metadata(
                            xdata, title=_('[LIVE] ') + ('AtomManipulator_') + _('dummy'))
-        manip_obj.rdy_create_pdi.set()
-        manip_obj.clear_manipulator_objects()
-        refresh_GUI(manip_obj, ['atoms', 'foreigns', 'targets'])
-    manip_obj.api.queue_task(func)
+        manipulator.rdy_create_pdi.set()
+        manipulator.clear_manipulator_objects()
+        refresh_GUI(manipulator, ['atoms', 'foreigns', 'targets'])
+    manipulator.api.queue_task(func)
 
 
 # GUI task function to be called after new image has been read.
-def init_pdi(manip_obj):
+def init_pdi(manipulator):
     def func():
-        if manip_obj.processed_data_item not in manip_obj.api.library.data_items:
-            manip_obj.rdy_create_pdi.clear()
-            create_pdi(manip_obj)
-        while not manip_obj.rdy_create_pdi.wait(1):
+        if manipulator.processed_data_item not in manipulator.api.library.data_items:
+            manipulator.rdy_create_pdi.clear()
+            create_pdi(manipulator)
+        while not manipulator.rdy_create_pdi.wait(1):
             pass # waiting for creation of processed_data_item
-        manip_obj.processed_data_item.title = _('[LIVE] ') + 'AtomManipulator_' + manip_obj.source_title
-        manip_obj.processed_data_item.xdata = copy.deepcopy(manip_obj.source_xdata)
+        manipulator.processed_data_item.title = _('[LIVE] ') + 'AtomManipulator_' + manipulator.source_title
+        manipulator.processed_data_item.xdata = copy.deepcopy(manipulator.source_xdata)
         
-        data = np.array(manip_obj.processed_data_item.data)
-        manip_obj.processed_data_item.original_data_rgb = np.tile(
+        data = np.array(manipulator.processed_data_item.data)
+        manipulator.processed_data_item.original_data_rgb = np.tile(
             ((data - data.min()) / data.ptp() * 255).astype(np.uint8)[..., None], (1, 1, 3))
-        manip_obj.processed_data_item.original_data = data
+        manipulator.processed_data_item.original_data = data
         
-        manip_obj.processed_data_item.data = manip_obj.processed_data_item.original_data_rgb
+        manipulator.processed_data_item.data = manipulator.processed_data_item.original_data_rgb
 
-        if manip_obj.snapshot_counter is not None:
-            sdi = manip_obj.api.library.snapshot_data_item(manip_obj.processed_data_item)
-            sdi.title = _('AtomManipulator frame ' + str(manip_obj.snapshot_counter) + ' RAW_' + manip_obj.source_title)
-            manip_obj.snapshot_counter += 1
+        if manipulator.snapshot_counter is not None:
+            sdi = manipulator.api.library.snapshot_data_item(manipulator.processed_data_item)
+            sdi.title = _('AtomManipulator frame ' + str(manipulator.snapshot_counter) + ' RAW_' + manipulator.source_title)
+            manipulator.snapshot_counter += 1
 
-        manip_obj.rdy_init_pdi.set()
-    manip_obj.api.queue_task(func)
+        manipulator.rdy_init_pdi.set()
+    manipulator.api.queue_task(func)
 
 
 # GUI task function for updating the data in the processed_data_item.
-def update_pdi(manip_obj, new_data):
+def update_pdi(manipulator, new_data):
     def func():
-        if manip_obj.processed_data_item not in manip_obj.api.library.data_items:
-            manip_obj.rdy_init_pdi.clear()
+        if manipulator.processed_data_item not in manipulator.api.library.data_items:
+            manipulator.rdy_init_pdi.clear()
             init_pdi()
-        while not manip_obj.rdy_init_pdi.wait(1):
+        while not manipulator.rdy_init_pdi.wait(1):
             pass
-        manip_obj.processed_data_item.data = new_data
-        manip_obj.rdy_update_pdi.set()
-    manip_obj.api.queue_task(func)
+        manipulator.processed_data_item.data = new_data
+        manipulator.rdy_update_pdi.set()
+    manipulator.api.queue_task(func)
 
 
 # Support function: Add a listener to "graphic changed" events.
-def add_listener_graphic_changed(manip_obj, graphic):
+def add_listener_graphic_changed(manipulator, graphic):
     def check_site():
-        shape = manip_obj.source_xdata.data_shape
-        all_coords = map(lambda x: x.coords, manip_obj.sites)
-        nearest_site = manip_obj.sites[ np.linalg.norm(
+        shape = manipulator.source_xdata.data_shape
+        all_coords = map(lambda x: x.coords, manipulator.sites)
+        nearest_site = manipulator.sites[ np.linalg.norm(
                 np.array(list(all_coords))-np.array(graphic.center)*shape, axis=1).argmin() ]
         #print(nearest_site)
         if hasattr(graphic, 'atom') and (nearest_site is not graphic.atom.origin):
@@ -173,21 +173,21 @@ def add_listener_graphic_changed(manip_obj, graphic):
             #logging.info(" changed target site ")
         else:
             pass
-    #graphic = manip_obj.api.library.get_data_item_by_uuid(manip_obj.processed_data_item.uuid).graphics[-1]
-    manip_obj.listeners.append( graphic._graphic.graphic_changed_event.listen(check_site) )
+    #graphic = manipulator.api.library.get_data_item_by_uuid(manipulator.processed_data_item.uuid).graphics[-1]
+    manipulator.listeners.append( graphic._graphic.graphic_changed_event.listen(check_site) )
 
 
 # Elemental identification.
-def elemental_identification(manip_obj):
+def elemental_identification(manipulator):
     # Calculate intensity values.
-    while not manip_obj.rdy_create_pdi.wait(1) or not manip_obj.rdy_init_pdi.wait(1) or not manip_obj.rdy_update_pdi.wait(1):
+    while not manipulator.rdy_create_pdi.wait(1) or not manipulator.rdy_init_pdi.wait(1) or not manipulator.rdy_update_pdi.wait(1):
         pass # waiting for tasks on processed_data_item to be completed
     
     # Aliases
-    sampling = manip_obj.structure_recognition_module.sampling
-    labels = manip_obj.structure_recognition_module.nn_output['labels']
-    int_radius_A = manip_obj.structure_recognition_module.elemental_id_int_radius
-    Z_exponent = manip_obj.structure_recognition_module.elemental_id_exponent
+    sampling = manipulator.structure_recognition_module.sampling
+    labels = manipulator.structure_recognition_module.nn_output['labels']
+    int_radius_A = manipulator.structure_recognition_module.elemental_id_int_radius
+    Z_exponent = manipulator.structure_recognition_module.elemental_id_exponent
     
     # Get double Gaussian blur.
     if np.isnan(sampling):
@@ -196,9 +196,9 @@ def elemental_identification(manip_obj):
 
     sigma1 = 0.25 # in Angstroems
     sigma1 /= sampling
-    data = dgb(manip_obj.processed_data_item.original_data, sigma1=sigma1, sigma2=3*sigma1, weight2=0.4)
+    data = dgb(manipulator.processed_data_item.original_data, sigma1=sigma1, sigma2=3*sigma1, weight2=0.4)
                
-    intensities = integrate_intensities(data, manip_obj.maxima_locations,
+    intensities = integrate_intensities(data, manipulator.maxima_locations,
                 integration_radius = int_radius_A/sampling
                 )
     mean_intensity_carbon = np.nanmean( intensities[labels == 0] )
@@ -206,7 +206,7 @@ def elemental_identification(manip_obj):
         
     labels = []
     graphics = []
-    for atom in manip_obj.sources:
+    for atom in manipulator.sources:
         if atom.defined_by_user:
             #continue
             pass
@@ -222,7 +222,7 @@ def elemental_identification(manip_obj):
     def func():
         for label, graphic in zip(labels, graphics):
             graphic.label = label
-    manip_obj.api.queue_task(func)
+    manipulator.api.queue_task(func)
 
 
 def integrate_intensities(data, maxima_locations, integration_radius=1):

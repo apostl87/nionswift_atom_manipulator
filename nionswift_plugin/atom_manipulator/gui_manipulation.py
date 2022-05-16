@@ -13,9 +13,9 @@ defaults = {'snapshot': True}
 
 class ManipulationModule(lib_utils.AtomManipulatorModule):
 
-    def __init__(self, ui, api, document_controller, manipulator=None):
+    def __init__(self, ui, api, document_controller, manipulator):
         super().__init__(ui, api, document_controller)
-        self.manipulator = manipulator
+        self.manipulator = manipulator # AtomManipulatorDelegate object
         self.snapshot = None
         self.stop_auto_manipulate_event = threading.Event()
 
