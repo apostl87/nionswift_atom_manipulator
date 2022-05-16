@@ -21,9 +21,10 @@ class PathFindingModule(AtomManipulatorModule):
         self.max_bond_length = None # Internally Nion Swift calculates in nm.
         self.rdy = threading.Event()
 
+    # GUI creation method. 
     def create_widgets(self, column):
-        section = Section(self.ui, 'Pathfinding')
-        column.add(section)
+        self.section = Section(self.ui, 'Pathfinding')
+        column.add(self.section)
 
         # Buttons for adding and removing foreign atoms and target sites.
         def toggle_button1_text(): # Foreign atoms
@@ -125,7 +126,7 @@ class PathFindingModule(AtomManipulatorModule):
         # Set defaults.
         max_bond_length_editing_finished(str(defaults['max_bond_length']))
         
-        section.column.add(foreign_atoms_row)
-        section.column.add(target_sites_row)
-        section.column.add(max_bond_length_row)
-        section.column.add(find_paths_row)
+        self.section.column.add(foreign_atoms_row)
+        self.section.column.add(target_sites_row)
+        self.section.column.add(max_bond_length_row)
+        self.section.column.add(find_paths_row)

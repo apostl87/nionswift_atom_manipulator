@@ -28,7 +28,6 @@ devices_dict = {
 class AtomManipulatorDelegate:
     
     def __init__(self, api):
-
         # Obligatory code block for Nion Swift plug-ins.
         self.api = api
         self.panel_id = "atom-manipulator-panel"

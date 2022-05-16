@@ -23,6 +23,7 @@ from . import lib_utils
 
 _ = gettext.gettext
 
+
 # Main pathfinding function.
 def find_paths(manipulator, auto_manipulate=False):
 
@@ -92,6 +93,7 @@ def find_paths(manipulator, auto_manipulate=False):
     manipulator.t5 = threading.Thread(target = do_this)
     manipulator.t5.start()
 
+
 # Wrapper for adding/removing foreign atoms / target sites
 def add_or_remove_foreign_atoms_or_target_sites(manipulator, mode=None, startstop=False):
     
@@ -132,7 +134,6 @@ def add_or_remove_foreign_atoms_or_target_sites(manipulator, mode=None, startsto
 def add_atom_or_site_near_image_point(manipulator, image_point, mode):
     
     if manipulator.sites:
-
         # Find nearest atom site.
         all_coords = map(lambda x: x.coords, manipulator.sites)
         nearest_site = manipulator.sites[ np.linalg.norm(
@@ -196,7 +197,8 @@ def remove_atom_or_site_near_image_point(manipulator, image_point, mode):
             manipulator.processed_data_item.remove_region(nearest_target.graphic)
         else:
             logging.info(lib_utils.log_message("No target sites found."))
-    
+
+  
 # Set probe position.
 def move_probe(manipulator):
 
