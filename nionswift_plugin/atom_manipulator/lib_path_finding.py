@@ -1,6 +1,9 @@
 """
 Pathfinding algorithm.
 - Determines the shortest total path from all sources to all targets.
+- Based on pathfinding algorithms published in
+  [1] Hart, P., Nilsson, N. & Raphael, B. IEEE Trans. Syst. Sci. Cybern. 4, 100–107 (1968).
+  [2] Kalff, F. E., et al. Nature nanotechnology 11.11, 926-929 (2016).
 """
 
 import copy
