@@ -15,9 +15,9 @@ defaults = {'max_bond_length': 1.8} # in Angstroem
 
 class PathFindingModule(AtomManipulatorModule):
     
-    def __init__(self, ui, api, document_controller, manipulator_object):
+    def __init__(self, ui, api, document_controller, manipulator):
         super().__init__(ui, api, document_controller)
-        self.manip_obj = manipulator_object
+        self.manipulator = manipulator # AtomManipulatorDelegate object
         self.max_bond_length = None # Internally Nion Swift calculates in nm.
         self.rdy = threading.Event()
 
@@ -79,7 +79,7 @@ class PathFindingModule(AtomManipulatorModule):
                 self.add_remove_buttons[last_mode[0]].state = False
             self.add_remove_buttons[button_idx].text = next(buttons_text[button_idx])
             self.add_remove_buttons[button_idx].state = not self.add_remove_buttons[button_idx].state
-            lib_path_finding.add_or_remove_foreign_atoms_or_target_sites(self.manip_obj, mode=button_idx, startstop=self.add_remove_buttons[button_idx].state)
+            lib_path_finding.add_or_remove_foreign_atoms_or_target_sites(self.manipulator, mode=button_idx, startstop=self.add_remove_buttons[button_idx].state)
 
         # Labels.
         self.N_foreign_atoms_label = self.ui.create_label_widget('0')
@@ -114,11 +114,11 @@ class PathFindingModule(AtomManipulatorModule):
         
         find_paths_row, self.find_paths_button = push_button_template(self.ui, 'Find paths')
         def find_paths_clicked():
-            lib_path_finding.find_paths(self.manip_obj)
+            lib_path_finding.find_paths(self.manipulator)
         self.find_paths_button.on_clicked = find_paths_clicked
         self.move_probe_button = self.ui.create_push_button_widget('Move probe') # to the next demanded position')
         def move_probe_clicked():
-            lib_path_finding.move_probe(self.manip_obj)
+            lib_path_finding.move_probe(self.manipulator)
         self.move_probe_button.on_clicked = move_probe_clicked
         find_paths_row.add(self.move_probe_button)
         
