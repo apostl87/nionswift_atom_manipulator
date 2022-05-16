@@ -55,8 +55,10 @@ class ManipulationModule(lib_utils.AtomManipulatorModule):
                 
                 ## Call modules
                 # Structure recognition.
-                if self.snapshot: self.manipulator.snapshot_counter = 1
-                else: self.manipulator.snapshot_counter = None
+                if self.snapshot:
+                    self.manipulator.snapshot_counter = 1
+                else:
+                    self.manipulator.snapshot_counter = None
                 lib_structure_recognition.analyze_and_show(self.manipulator.structure_recognition_module, auto_manipulate=True)
 
                 # Pathfinding.

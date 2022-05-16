@@ -3,7 +3,7 @@ import logging
 import gettext
 from .lib_utils import AtomManipulatorModule
 from .lib_widgets import Section, line_edit_template, check_box_template, combo_box_template
-from adf_feedback import adf_feedback as fb
+from adf_feedback import adf_feedback as adffb
 from . import lib_structure_recognition
 from . import lib_pathfinding
 
@@ -92,8 +92,8 @@ class TractorBeamModule(AtomManipulatorModule):
         def onbutton_clicked():
             logging.info(lib_utils.log_message("Starting TractorBeam"))
             try:
-                self.fb_obj = fb.ADFFeedbackDelegate(self.api, offline_test_mode = self.otm_check_box.checked, autodetect_changes = self.adc_check_box.checked)        
-                self.fb_obj.startmap(self.frame_timeout, self.jump_threshold, self.drift_threshold, self.reposition_timeout)
+                self.ADFFeedback = adffb.ADFFeedbackDelegate(self.api, offline_test_mode = self.otm_check_box.checked, autodetect_changes = self.adc_check_box.checked)        
+                self.ADFFeedback.startmap(self.frame_timeout, self.jump_threshold, self.drift_threshold, self.reposition_timeout)
             except Exception as exc:
                 logging.info(lib_utils.log_message("Exception when calling adf_feedback"))
                 print(exc)
@@ -102,7 +102,7 @@ class TractorBeamModule(AtomManipulatorModule):
         def offbutton_clicked():
             logging.info(lib_utils.log_message("Stopping TractorBeam"))
             try:
-                self.fb_obj.stopmap()
+                self.ADFFeedback.stopmap()
             except:
                 pass
         onbutton.on_clicked = onbutton_clicked
