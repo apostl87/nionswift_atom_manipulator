@@ -4,7 +4,7 @@ import numpy as np
 
 # GUI classes
 from .gui_tractor_beam import TractorBeamModule
-from .gui_path_finding import PathFindingModule
+from .gui_pathfinding import PathFindingModule
 from .gui_structure_recognition import StructureRecognitionModule
 from .gui_manipulation import ManipulationModule
 
