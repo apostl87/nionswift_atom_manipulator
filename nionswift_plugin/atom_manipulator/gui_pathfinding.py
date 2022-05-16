@@ -108,7 +108,7 @@ class PathFindingModule(AtomManipulatorModule):
         target_sites_row.add(self.remove_target_sites_button)
         target_sites_row.add_stretch()
         
-        ## Other rows.
+        ## Other widget rows.
         max_bond_length_row, self.max_bond_length_line_edit = line_edit_template(self.ui, 'Max. bond length [A]')
         def max_bond_length_editing_finished(text):
             if len(text) > 0:
