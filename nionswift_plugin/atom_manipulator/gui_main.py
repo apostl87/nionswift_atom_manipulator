@@ -14,20 +14,21 @@ from . import lib_utils
 
 _ = gettext.gettext
 
-# Defaults on initialization
+# Defaults on initialization.
 defaults = {'simulation_mode': False}
 
-# Nion Swift device name strings
+# Nion Swift device name strings.
 devices_dict = {
     False: 'scan_controller', # physical scan device, simulation mode off
     True: 'usim_scan_device' # simulation mode on
 }
 
+# Obligatory delegate class for Nion Swift plug-ins.
 class AtomManipulatorDelegate:
-     
+    
     def __init__(self, api):
-        
-        # Obligatory code block for Nion Swift plug-ins
+
+        # Obligatory code block for Nion Swift plug-ins.
         self.api = api
         self.panel_id = "atom-manipulator-panel"
         self.panel_name = _("Atom Manipulator")
@@ -46,7 +47,8 @@ class AtomManipulatorDelegate:
         self.simulation_mode = None
 
         # General control.
-        self.scan_parameters_changed = None # If this is True, the application will ???
+        self.scan_parameters_changed = None # During execution, this is True or False.
+                                            # The application will react accordingly.
 
         # Data item numbering.
         self.snapshot_counter = None
@@ -71,9 +73,9 @@ class AtomManipulatorDelegate:
         self.t6 = None
         
         # Events.
-        self.sr_rdy = threading.Event()
-        self.pf_rdy = threading.Event()
-        self.tb_rdy = threading.Event()
+        self.sr_rdy = threading.Event() # Structure recognition ready
+        self.pf_rdy = threading.Event() # Path finding ready
+        self.tb_rdy = threading.Event() # Tractor Beam ready
         self.rdy_create_pdi = threading.Event()
         self.rdy_create_pdi.set()
         self.rdy_init_pdi = threading.Event()
@@ -84,6 +86,7 @@ class AtomManipulatorDelegate:
         # Listeners.
         self.listeners = []
     
+    # Re-initialization.
     def clear_manipulator_objects(self):
         self.sites = []
         self.sources = []
@@ -97,6 +100,7 @@ class AtomManipulatorDelegate:
         self.rectangle_regions_auto = []
         self.ellipse_regions = []
 
+    # Obligatory widget method for Nion Swift plug-ins.
     def create_panel_widget(self, ui, document_controller):
         self.ui = ui
         self.document_controller = document_controller
@@ -141,11 +145,11 @@ class AtomManipulatorDelegate:
         # Set defaults.
         simulation_mode_changed(defaults['simulation_mode'])
         
-        #return main_col
         return scroll_area 
         
-
+# Obligatory extension class for Nion Swift plug-ins.
 class AtomManipulatorExtension(object):
+    
     # Required for Nion Swift to recognize this as an extension class.
     extension_id = "nion.swift.extension.atom_manipulator"
     
