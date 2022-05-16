@@ -7,50 +7,63 @@ from .gui_tractor_beam import TractorBeamModule
 from .gui_path_finding import PathFindingModule
 from .gui_structure_recognition import StructureRecognitionModule
 from .gui_manipulation import ManipulationModule
+
+# Custom libs
 from .lib_widgets import ScrollArea, push_button_template
 from . import lib_utils
 
 _ = gettext.gettext
 
+# Defaults on initialization
 defaults = {'simulation_mode': False}
 
-devices_dict = {False: 'scan_controller',
-                True: 'usim_scan_device'}
+# Nion Swift device name strings
+devices_dict = {
+    False: 'scan_controller', # physical scan device, simulation mode off
+    True: 'usim_scan_device' # simulation mode on
+}
 
 class AtomManipulatorDelegate:
      
     def __init__(self, api):
+        
+        # Obligatory code block for Nion Swift plug-ins
         self.api = api
         self.panel_id = "atom-manipulator-panel"
         self.panel_name = _("Atom Manipulator")
         self.panel_positions = ["left", "right"]
         self.panel_position = "right"
         
-        # Init
-        self.simulation_mode = None
-        self.superscan = None
-        self.scan_parameters = None
-        self.scan_parameters_changed = None
-        self.snapshot_counter = None
-        
-        # Nion Swift objects that are used by this plug-in.
+        # Aliases of Nion Swift objects used by this plug-in.
         self.source_xdata = None
         self.processed_data_item = None
+        self.superscan = None
+        self.scan_parameters = None
         
-        # Objects internal to the plug-in.
-        self.sites = []
-        self.sources = []
-        self.targets = []
-        self.bonds = None
-        self.paths = None
+        ### Objects internal to the plug-in.
+
+        # GUI elements.
+        self.simulation_mode = None
+
+        # General control.
+        self.scan_parameters_changed = None # If this is True, the application will ???
+
+        # Data item numbering.
+        self.snapshot_counter = None
         
-        # Workaround: Reposition graphics.
-        self.listeners = []
+        # Graphics objects.
         self.point_regions = []
         self.line_regions = []
         self.rectangle_regions = [] 
         self.rectangle_regions_auto = []
         self.ellipse_regions = []
+
+        # Back-end for atoms, bonds, and bonds.
+        self.sites = []
+        self.sources = []
+        self.targets = []
+        self.bonds = None
+        self.paths = None
         
         # Threads.
         self.t1 = None
@@ -67,6 +80,9 @@ class AtomManipulatorDelegate:
         self.rdy_init_pdi.set()
         self.rdy_update_pdi = threading.Event()
         self.rdy_update_pdi.set()
+
+        # Listeners.
+        self.listeners = []
     
     def clear_manipulator_objects(self):
         self.sites = []
