@@ -1,13 +1,17 @@
+import gettext
 import threading
 import numpy as np
-import gettext
+
+# Custom libraries
 from .lib_utils import AtomManipulatorModule
 from .lib_widgets import Section, line_edit_template, check_box_template, combo_box_template, push_button_template
 from . import lib_path_finding
 
 _ = gettext.gettext
 
+# Defaults on initialization.
 defaults = {'max_bond_length': 1.8} # in Angstroem
+
 
 class PathFindingModule(AtomManipulatorModule):
     
@@ -22,19 +26,19 @@ class PathFindingModule(AtomManipulatorModule):
         column.add(section)
 
         # Buttons for adding and removing foreign atoms and target sites.
-        def toggle_button1_text():
+        def toggle_button1_text(): # Foreign atoms
             while True:
-                yield _('Add') #' foreign atoms')
-                yield _('Stop adding') #' adding foreign atoms')
-        def toggle_button2_text():
+                yield _('Add')
+                yield _('Stop adding')
+        def toggle_button2_text(): # Foreign atoms
             while True:
                 yield _('Remove')
                 yield _('Stop removing')
-        def toggle_button3_text():
+        def toggle_button3_text(): # Target sites
             while True:
-                yield _('Add') #'target sites')
-                yield _('Stop adding') #'adding target sites')
-        def toggle_button4_text():
+                yield _('Add')
+                yield _('Stop adding')
+        def toggle_button4_text(): # Target sites
             while True:
                 yield _('Remove')
                 yield _('Stop removing')
