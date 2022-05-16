@@ -158,7 +158,7 @@ def add_atom_or_site_near_image_point(manipulator, image_point, mode):
             # Insert region.
             manipulator.ellipse_regions.append( manipulator.processed_data_item.add_ellipse_region(
                 nearest_site.coords[0]/shape[0], nearest_site.coords[1]/shape[1], relative_size, relative_size))
-            # Mutual assignment.
+            # Mutual variable assignment.
             manipulator.ellipse_regions[-1].site = nearest_site
             manipulator.targets[-1].graphic = manipulator.ellipse_regions[-1]
             lib_utils.add_listener_graphic_changed(manipulator, manipulator.targets[-1].graphic)
