@@ -40,7 +40,7 @@ class ManipulationModule(lib_utils.AtomManipulatorModule):
         snapshot_row.add_spacing(10)
         snapshot_row.add(self.snapshot_row_checkbox)
         
-        # Button for Start/Stop.
+        # Button row (Start/Stop).
         automanip_button = self.ui.create_push_button_widget(_("Start automatical manipulation"))
         automanip_button.state = False
         def automanip_button_clicked():
@@ -64,22 +64,31 @@ class ManipulationModule(lib_utils.AtomManipulatorModule):
                 # Pathfinding.
                 lib_pathfinding.find_paths(self.manipulator, auto_manipulate=True)
                 
-                # Tractor beam.
+                # Tractor beam (wrapper).
                 try:
-                    # Communication events.
+                    # In this (auto-manipulation) operation mode, ADFFeedback itself listens to comm_events and will stop execution accordingly.
+                    
+                     # Communication events.
                     comm_events = [self.manipulator.structure_recognition_module.new_image,
                                    self.manipulator.pathfinding_module.rdy,
                                    self.manipulator.tractor_beam_module.rdy]
-                    self.ADFFeedback = adffb.ADFFeedbackDelegate(self.api, 
+                    
+                    self.ADFFeedback = adffb.ADFFeedbackDelegate(
+                        self.api, 
                         offline_test_mode = self.manipulator.tractor_beam_module.otm_check_box.checked,
                         autodetect_changes = self.manipulator.tractor_beam_module.adc_check_box.checked,
-                        external_stop_event = self.stop_auto_manipulate_event)
-                    self.ADFFeedback.startmap(self.manipulator.tractor_beam_module.frame_timeout,
-                                         self.manipulator.tractor_beam_module.jump_threshold,
-                                         self.manipulator.tractor_beam_module.drift_threshold,
-                                         self.manipulator.tractor_beam_module.reposition_timeout,
-                                         comm_events,
-                                         self.manipulator)
+                        external_stop_event = self.stop_auto_manipulate_event
+                    )
+                    
+                    self.ADFFeedback.startmap(
+                        self.manipulator.tractor_beam_module.frame_timeout,
+                        self.manipulator.tractor_beam_module.jump_threshold,
+                        self.manipulator.tractor_beam_module.drift_threshold,
+                        self.manipulator.tractor_beam_module.reposition_timeout,
+                        comm_events=comm_events,
+                        manip_obj=self.manipulator
+                    )
+                        
                 except Exception as exc:
                     logging.info(lib_utils.log_message("Exception when calling adf_feedback"))
                     print(exc)
