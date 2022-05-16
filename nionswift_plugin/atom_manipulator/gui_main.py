@@ -1,5 +1,3 @@
-# Special thanks for coding support go to A. Mittelberger (Brow71189@github)
-
 import gettext
 import threading
 import numpy as np
