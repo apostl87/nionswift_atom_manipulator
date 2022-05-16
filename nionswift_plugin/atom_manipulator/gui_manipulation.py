@@ -9,7 +9,7 @@ from . import lib_utils
 
 _ = gettext.gettext
 
-defaults = { 'snapshot': True}
+defaults = {'snapshot': True}
 
 class ManipulationModule(lib_utils.AtomManipulatorModule):
 
