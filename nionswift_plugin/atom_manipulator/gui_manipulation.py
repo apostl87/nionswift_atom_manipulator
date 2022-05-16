@@ -2,7 +2,7 @@ import threading
 import logging
 import gettext
 from .lib_widgets import Section, line_edit_template, check_box_template, combo_box_template
-from adf_feedback import adf_feedback as fb
+from adf_feedback import adf_feedback as adffb
 from . import lib_structure_recognition
 from . import lib_pathfinding
 from . import lib_utils
@@ -11,14 +11,17 @@ _ = gettext.gettext
 
 defaults = {'snapshot': True}
 
+
 class ManipulationModule(lib_utils.AtomManipulatorModule):
 
     def __init__(self, ui, api, document_controller, manipulator):
+        
         super().__init__(ui, api, document_controller)
         self.manipulator = manipulator # AtomManipulatorDelegate object
         self.snapshot = None
         self.stop_auto_manipulate_event = threading.Event()
 
+    # GUI creation method. 
     def create_widgets(self, column):
         self.section = Section(self.ui, 'Manipulation')
         column.add(self.section)
@@ -28,7 +31,9 @@ class ManipulationModule(lib_utils.AtomManipulatorModule):
             self.snapshot_row_checkbox.checked = checked
             self.snapshot = checked
         
-        # GUI elements.
+        ## GUI elements.
+
+        # Snapshot row.
         snapshot_row = self.ui.create_row_widget()
         self.snapshot_row_checkbox = self.ui.create_check_box_widget(_("Snapshot every frame (1x raw, 1x w/ insets"))
         self.snapshot_row_checkbox.on_checked_changed = snapshot_changed
@@ -63,11 +68,11 @@ class ManipulationModule(lib_utils.AtomManipulatorModule):
                     comm_events = [self.manipulator.structure_recognition_module.new_image,
                                    self.manipulator.pathfinding_module.rdy,
                                    self.manipulator.tractor_beam_module.rdy]
-                    self.fb_obj = fb.ADFFeedbackDelegate(self.api, 
+                    self.ADFFeedback = adffb.ADFFeedbackDelegate(self.api, 
                         offline_test_mode = self.manipulator.tractor_beam_module.otm_check_box.checked,
                         autodetect_changes = self.manipulator.tractor_beam_module.adc_check_box.checked,
                         external_stop_event = self.stop_auto_manipulate_event)
-                    self.fb_obj.startmap(self.manipulator.tractor_beam_module.frame_timeout,
+                    self.ADFFeedback.startmap(self.manipulator.tractor_beam_module.frame_timeout,
                                          self.manipulator.tractor_beam_module.jump_threshold,
                                          self.manipulator.tractor_beam_module.drift_threshold,
                                          self.manipulator.tractor_beam_module.reposition_timeout,
@@ -86,7 +91,7 @@ class ManipulationModule(lib_utils.AtomManipulatorModule):
         automanip_button_row = self.ui.create_row_widget()
         automanip_button_row.add(automanip_button)
         
-        # Defaults.
+        # Set defaults.
         snapshot_changed(defaults['snapshot'])
         
         # Assemble GUI elements.
