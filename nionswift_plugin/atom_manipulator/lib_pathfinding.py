@@ -1,22 +1,31 @@
 """
-Pathfinding algorithm.
+Pathfinding algorithm and library.
 - Determines the shortest total path from all sources to all targets.
 - Based on pathfinding algorithms published in
   [1] Hart, P., Nilsson, N. & Raphael, B. IEEE Trans. Syst. Sci. Cybern. 4, 100–107 (1968).
   [2] Kalff, F. E., et al. Nature nanotechnology 11.11, 926-929 (2016).
 """
 
+import gettext
+import threading
+import numpy as np
+
 import copy
 import time
-import threading
 import logging
-import numpy as np
-from .classes import atoms_and_bonds as aab, paths
+
+# Nion libraries
 from nion.utils import Geometry
+
+# Custom libraries
+from .classes import atoms_and_bonds as aab, paths
 from . import lib_utils
 
-# Pathfinding
+_ = gettext.gettext
+
+# Main pathfinding function.
 def find_paths(manipulator, auto_manipulate=False):
+
     if (manipulator.sites == []) and not auto_manipulate: # or (manipulator.targets is None):
             logging.info(lib_utils.log_message("No sites found. Pathfinder aborted."))
             return
@@ -24,7 +33,7 @@ def find_paths(manipulator, auto_manipulate=False):
             logging.info(lib_utils.log_message("Pathfinder still working. Wait until finished."))
             return 
     
-    def thread_this():
+    def do_this():
         stop = False
         while not stop and not (auto_manipulate and manipulator.manipulation_module.stop_auto_manipulate_event.is_set()):
             if auto_manipulate:
@@ -80,17 +89,21 @@ def find_paths(manipulator, auto_manipulate=False):
         if auto_manipulate:
             logging.info(lib_utils.log_message("Pathfinder stopped."))
         
-    manipulator.t5 = threading.Thread(target = thread_this)
+    manipulator.t5 = threading.Thread(target = do_this)
     manipulator.t5.start()
 
-# Add foreign atoms or targets with grabbing the mouse cursor.
+# Wrapper for adding/removing foreign atoms / target sites
 def add_or_remove_foreign_atoms_or_target_sites(manipulator, mode=None, startstop=False):
+    
     # Modes:
     # 0 ... Add foreign atoms
     # 1 ... Remove foreign atoms
     # 2 ... Add target sites
     # 3 ... Remove target sites
+
+    # Alias for document_controller
     dc = manipulator.document_controller
+
     if not hasattr(manipulator, 'original_mouse_clicked'):
         manipulator.original_mouse_clicked = dc._document_controller.selected_display_panel.canvas_widget.on_mouse_clicked
 
@@ -109,32 +122,37 @@ def add_or_remove_foreign_atoms_or_target_sites(manipulator, mode=None, startsto
                         elif mode == 1 or mode == 3:
                             remove_atom_or_site_near_image_point(manipulator, image_point, mode)
                         lib_utils.refresh_GUI(manipulator, ['foreigns', 'targets'])
-                        #print(image_point)
         
         dc._document_controller.selected_display_panel.canvas_widget.on_mouse_clicked = on_mouse_clicked_custom
     else:
         dc._document_controller.selected_display_panel.canvas_widget.on_mouse_clicked = manipulator.original_mouse_clicked
 
+
+# Add foreign atom or target site by grabbing the position of the mouse cursor.
 def add_atom_or_site_near_image_point(manipulator, image_point, mode):
-    # Find nearest atom site.
+    
     if manipulator.sites:
+
+        # Find nearest atom site.
         all_coords = map(lambda x: x.coords, manipulator.sites)
         nearest_site = manipulator.sites[ np.linalg.norm(
             np.array(list(all_coords))-image_point, axis=1).argmin() ]
+        
+        # Style.
         relative_size = 0.05
         shape = manipulator.source_xdata.data_shape
-        if mode == 0:
-            # Add foreign atom
+
+        if mode == 0: # Add foreign atom.
             manipulator.sources.append( aab.Atom(nearest_site, 'pseudo-element', defined_by_user=True))
-            # Insert region
+            # Insert region.
             manipulator.rectangle_regions.append( manipulator.processed_data_item.add_rectangle_region(
                 nearest_site.coords[0]/shape[0], nearest_site.coords[1]/shape[1], relative_size, relative_size))
-            # Mutual assignment
+            # Mutual variable assignment.
             manipulator.rectangle_regions[-1].atom = manipulator.sources[-1]
             manipulator.sources[-1].graphic = manipulator.rectangle_regions[-1]
             lib_utils.add_listener_graphic_changed(manipulator, manipulator.sources[-1].graphic)
-        elif mode == 2:
-            # Add target site.
+        
+        elif mode == 2: # Add target site.
             manipulator.targets.append( nearest_site )
             # Insert region.
             manipulator.ellipse_regions.append( manipulator.processed_data_item.add_ellipse_region(
@@ -145,17 +163,19 @@ def add_atom_or_site_near_image_point(manipulator, image_point, mode):
             lib_utils.add_listener_graphic_changed(manipulator, manipulator.targets[-1].graphic)
     else:
         logging.info(lib_utils.log_message("No atom sites found."))
-        
+
+
+# Remove foreign atom or target site by grabbing the position of the mouse cursor.
 def remove_atom_or_site_near_image_point(manipulator, image_point, mode):
-    if mode == 1:
+    
+    if mode == 1: # Remove foreign atom.
         if manipulator.sources:
             # Find nearest foreign atom.
             all_coords = map(lambda x: x.site.coords, manipulator.sources)
             nearest_source = manipulator.sources[ np.linalg.norm(
                 np.array(list(all_coords))-image_point, axis=1).argmin() ]
-            # Remove foreign atom.
+            # Remove object and region.
             manipulator.sources.remove(nearest_source)
-            # Remove region.
             try:
                 manipulator.rectangle_regions.remove(nearest_source.graphic)
             except:
@@ -163,25 +183,28 @@ def remove_atom_or_site_near_image_point(manipulator, image_point, mode):
             manipulator.processed_data_item.remove_region(nearest_source.graphic)
         else:
             logging.info(lib_utils.log_message("No foreign atoms found."))
-    if mode == 3:
+    
+    if mode == 3: # Remove target site
         if manipulator.targets:
             # Find nearest target site.
             all_coords = map(lambda x: x.coords, manipulator.targets)
             nearest_target = manipulator.targets[ np.linalg.norm(
                 np.array(list(all_coords))-image_point, axis=1).argmin() ]
-            # Remove foreign atom.
+            # Remove object and region.
             manipulator.targets.remove(nearest_target)
-            # Remove region.
             manipulator.ellipse_regions.remove(nearest_target.graphic)
             manipulator.processed_data_item.remove_region(nearest_target.graphic)
         else:
             logging.info(lib_utils.log_message("No target sites found."))
     
-# Set probe position
+# Set probe position.
 def move_probe(manipulator):
-    # Choose next path that is longer than 1 site (1 site >=> atom is already at target site).
+
     if not hasattr(manipulator.paths, 'members'):
         logging.info(lib_utils.log_message("No paths found. Probe not repositioned."))
+    
+    # Choose next path that is longer than 1 site
+    # (1 site >=> atom is already at target site).
     yx = None
     for path_number, path in enumerate(manipulator.paths.members):
         if len(path.sitelist) >= 2:
