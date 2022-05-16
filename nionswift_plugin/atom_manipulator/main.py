@@ -8,7 +8,7 @@ from .gui_path_finding import PathFindingModule
 from .gui_structure_recognition import StructureRecognitionModule
 from .gui_manipulation import ManipulationModule
 
-# Custom libs
+# Custom libraries
 from .lib_widgets import ScrollArea, push_button_template
 from . import lib_utils
 
