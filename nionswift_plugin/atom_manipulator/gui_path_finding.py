@@ -22,7 +22,7 @@ class PathFindingModule(AtomManipulatorModule):
         self.rdy = threading.Event()
 
     def create_widgets(self, column):
-        section = Section(self.ui, 'Path Finding')
+        section = Section(self.ui, 'Pathfinding')
         column.add(section)
 
         # Buttons for adding and removing foreign atoms and target sites.
@@ -100,14 +100,16 @@ class PathFindingModule(AtomManipulatorModule):
         target_sites_row.add(self.remove_target_sites_button)
         target_sites_row.add_stretch()
         
-        # Other rows.
+        # Other GUI rows.
         max_bond_length_row, self.max_bond_length_line_edit = line_edit_template(self.ui, 'Max. bond length [A]')
         def max_bond_length_editing_finished(text):
             if len(text) > 0:
                 try:
                     self.max_bond_length = float(text)
-                except: pass
-                finally: self.max_bond_length_line_edit.text = f"{self.max_bond_length:.2f}"
+                except:
+                    pass
+                finally:
+                    self.max_bond_length_line_edit.text = f"{self.max_bond_length:.2f}"
         self.max_bond_length_line_edit.on_editing_finished = max_bond_length_editing_finished
         
         find_paths_row, self.find_paths_button = push_button_template(self.ui, 'Find paths')
@@ -123,7 +125,6 @@ class PathFindingModule(AtomManipulatorModule):
         # Set defaults.
         max_bond_length_editing_finished(str(defaults['max_bond_length']))
         
-        # section.column.add(model_row)
         section.column.add(foreign_atoms_row)
         section.column.add(target_sites_row)
         section.column.add(max_bond_length_row)

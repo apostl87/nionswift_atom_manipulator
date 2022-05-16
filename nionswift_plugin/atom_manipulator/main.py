@@ -23,6 +23,7 @@ devices_dict = {
     True: 'usim_scan_device' # simulation mode on
 }
 
+
 # Obligatory delegate class for Nion Swift plug-ins.
 class AtomManipulatorDelegate:
     
