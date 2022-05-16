@@ -148,6 +148,7 @@ class AtomManipulatorDelegate:
         
         return scroll_area 
         
+
 # Obligatory extension class for Nion Swift plug-ins.
 class AtomManipulatorExtension(object):
     
