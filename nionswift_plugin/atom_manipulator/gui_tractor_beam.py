@@ -5,7 +5,7 @@ from .lib_utils import AtomManipulatorModule
 from .lib_widgets import Section, line_edit_template, check_box_template, combo_box_template
 from adf_feedback import adf_feedback as fb
 from . import lib_structure_recognition
-from . import lib_path_finding
+from . import lib_pathfinding
 
 _ = gettext.gettext
 

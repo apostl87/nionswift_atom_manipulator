@@ -17,7 +17,7 @@ from .classes import atoms_and_bonds as aab
 from fourier_scale_calibration.fourier_scale_calibration import FourierSpaceCalibrator
 
 from . import lib_utils
-from . import lib_path_finding 
+from . import lib_pathfinding 
 
 _ = gettext.gettext
    
@@ -234,9 +234,9 @@ def analyze_and_show(sr_obj, auto_manipulate=False, live_analysis=False):
                 sr_obj.rdy.set() # Signal that this is ready.
                 #print("why error when deleting a data item")
                 
-                # Integrate path finder in live analysis.
+                # Integrate pathfinding in live analysis.
                 if live_analysis and (len(manip_obj.sources)>=0 and len(manip_obj.targets)>=0):
-                    lib_path_finding.find_paths(manip_obj)
+                    lib_pathfinding.find_paths(manip_obj)
                 
         if auto_manipulate:
             logging.info(lib_utils.log_message("Structure recognition stopped."))
