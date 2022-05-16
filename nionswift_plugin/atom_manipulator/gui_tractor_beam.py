@@ -1,15 +1,18 @@
+import gettext
 import threading
 import logging
-import gettext
+
+# Custom libraries
+from . import lib_utils
+from . import lib_structure_recognition
+from . import lib_pathfinding
 from .lib_utils import AtomManipulatorModule
 from .lib_widgets import Section, line_edit_template, check_box_template, combo_box_template
 from adf_feedback import adf_feedback as adffb
-from . import lib_structure_recognition
-from . import lib_pathfinding
-from . import lib_utils
 
 _ = gettext.gettext
 
+# Parameter presets.
 presets = { '55 kV':
                {'frame_timeout': '45',
                 'reposition_timeout': '2',
@@ -23,10 +26,11 @@ presets = { '55 kV':
                 'drift_threshold': '4',
                 }
            }
-    
+
+# Defaults on initialization.
 defaults = {'offline_test_mode': False,
-             'auto_detect_changes': True,
-             'preset': '60 kV'}
+            'auto_detect_changes': True,
+            'preset': '60 kV'}
 
  
 class TractorBeamModule(AtomManipulatorModule):

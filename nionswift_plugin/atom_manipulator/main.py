@@ -9,19 +9,19 @@ from .gui_structure_recognition import StructureRecognitionModule
 from .gui_manipulation import ManipulationModule
 
 # Custom libraries
-from .lib_widgets import ScrollArea, push_button_template
 from . import lib_utils
+from .lib_widgets import ScrollArea, push_button_template
 
 _ = gettext.gettext
-
-# Defaults on initialization.
-defaults = {'simulation_mode': False}
 
 # Nion Swift device name strings.
 devices_dict = {
     False: 'scan_controller', # physical scan device, simulation mode off
     True: 'usim_scan_device' # simulation mode on
 }
+
+# Defaults on initialization.
+defaults = {'simulation_mode': False}
 
 
 # Obligatory delegate class for Nion Swift plug-ins.

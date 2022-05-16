@@ -1,21 +1,23 @@
+import gettext
 import threading
 import logging
-import gettext
-from .lib_widgets import Section, line_edit_template, check_box_template, combo_box_template
-from adf_feedback import adf_feedback as adffb
+
+# Custom libraries
+from . import lib_utils
 from . import lib_structure_recognition
 from . import lib_pathfinding
-from . import lib_utils
+from .lib_widgets import Section, line_edit_template, check_box_template, combo_box_template
+from adf_feedback import adf_feedback as adffb
 
 _ = gettext.gettext
 
+# Defaults on initialization.
 defaults = {'snapshot': True}
 
 
 class ManipulationModule(lib_utils.AtomManipulatorModule):
 
     def __init__(self, ui, api, document_controller, manipulator):
-        
         super().__init__(ui, api, document_controller)
         self.manipulator = manipulator # AtomManipulatorDelegate object
         self.snapshot = None

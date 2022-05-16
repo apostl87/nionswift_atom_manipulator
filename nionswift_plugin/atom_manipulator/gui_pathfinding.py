@@ -3,9 +3,9 @@ import threading
 import numpy as np
 
 # Custom libraries
+from . import lib_pathfinding
 from .lib_utils import AtomManipulatorModule
 from .lib_widgets import Section, line_edit_template, check_box_template, combo_box_template, push_button_template
-from . import lib_pathfinding
 
 _ = gettext.gettext
 
