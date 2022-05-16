@@ -4,7 +4,7 @@ import gettext
 from .lib_widgets import Section, line_edit_template, check_box_template, combo_box_template
 from adf_feedback import adf_feedback as fb
 from . import lib_structure_recognition
-from . import lib_path_finding
+from . import lib_pathfinding
 from . import lib_utils
 
 _ = gettext.gettext
@@ -55,7 +55,7 @@ class ManipulationModule(lib_utils.AtomManipulatorModule):
                 lib_structure_recognition.analyze_and_show(self.manip_obj.structure_recognition_module, auto_manipulate=True)
 
                 # Pathfinding.
-                lib_path_finding.find_paths(self.manip_obj, auto_manipulate=True)
+                lib_pathfinding.find_paths(self.manip_obj, auto_manipulate=True)
                 
                 # Tractor beam.
                 try:
