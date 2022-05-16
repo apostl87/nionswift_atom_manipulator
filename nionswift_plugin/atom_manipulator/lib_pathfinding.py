@@ -42,7 +42,7 @@ def find_paths(manipulator, auto_manipulate=False):
             t = time.time()
             logging.info(lib_utils.log_message("Setting bonds..."))
             max_bond_length_px = manipulator.source_xdata.dimensional_calibrations[0].convert_from_calibrated_size(
-                    manipulator.path_finding_module.max_bond_length/10)
+                    manipulator.pathfinding_module.max_bond_length/10)
             if manipulator.simulation_mode:
                 max_bond_length_px *= 10 # Wrong conversion im usim fork
             manipulator.bonds = aab.Bonds(manipulator.sites, max_bond_length_px)
@@ -75,7 +75,7 @@ def find_paths(manipulator, auto_manipulate=False):
             
             if auto_manipulate:
                 move_probe(manipulator)
-            manipulator.path_finding_module.rdy.set()
+            manipulator.pathfinding_module.rdy.set()
 
         if auto_manipulate:
             logging.info(lib_utils.log_message("Pathfinder stopped."))

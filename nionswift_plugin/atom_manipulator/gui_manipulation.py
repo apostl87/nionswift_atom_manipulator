@@ -44,7 +44,7 @@ class ManipulationModule(lib_utils.AtomManipulatorModule):
                 logging.info(lib_utils.log_message("Starting automatical manipulation ..."))
                 ## Init
                 self.manipulator.tractor_beam_module.rdy.set()
-                self.manipulator.path_finding_module.rdy.clear()
+                self.manipulator.pathfinding_module.rdy.clear()
                 self.manipulator.structure_recognition_module.rdy.clear()
                 self.stop_auto_manipulate_event.clear()
                 
@@ -61,7 +61,7 @@ class ManipulationModule(lib_utils.AtomManipulatorModule):
                 try:
                     # Communication events.
                     comm_events = [self.manipulator.structure_recognition_module.new_image,
-                                   self.manipulator.path_finding_module.rdy,
+                                   self.manipulator.pathfinding_module.rdy,
                                    self.manipulator.tractor_beam_module.rdy]
                     self.fb_obj = fb.ADFFeedbackDelegate(self.api, 
                         offline_test_mode = self.manipulator.tractor_beam_module.otm_check_box.checked,

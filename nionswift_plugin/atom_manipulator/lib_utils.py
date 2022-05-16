@@ -76,9 +76,9 @@ def refresh_GUI(manipulator, var_strings):
         if 'atoms' in var_strings:
             manipulator.structure_recognition_module.N_atoms_label.text = str(len(manipulator.sites))
         if 'foreigns' in var_strings:
-            manipulator.path_finding_module.N_foreign_atoms_label.text = str(len(manipulator.sources))
+            manipulator.pathfinding_module.N_foreign_atoms_label.text = str(len(manipulator.sources))
         if 'targets' in var_strings:
-            manipulator.path_finding_module.N_target_sites_label.text = str(len(manipulator.targets))
+            manipulator.pathfinding_module.N_target_sites_label.text = str(len(manipulator.targets))
         if 'sampling' in var_strings:
             if manipulator.structure_recognition_module.sampling is None:
                 manipulator.structure_recognition_module.sampling_label.text = \

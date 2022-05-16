@@ -130,7 +130,7 @@ class AtomManipulatorDelegate:
         
         # Modules.
         self.structure_recognition_module = StructureRecognitionModule(self.ui, self.api, self.document_controller, self)
-        self.path_finding_module = PathFindingModule(self.ui, self.api, self.document_controller, self)
+        self.pathfinding_module = PathFindingModule(self.ui, self.api, self.document_controller, self)
         self.tractor_beam_module = TractorBeamModule(self.ui, self.api, self.document_controller, self)
         self.manipulation_module = ManipulationModule(self.ui, self.api, self.document_controller, self)
         
@@ -138,7 +138,7 @@ class AtomManipulatorDelegate:
         main_col.add_spacing(5)
         main_col.add(feature_row)
         self.structure_recognition_module.create_widgets(main_col)
-        self.path_finding_module.create_widgets(main_col)
+        self.pathfinding_module.create_widgets(main_col)
         self.tractor_beam_module.create_widgets(main_col)
         self.manipulation_module.create_widgets(main_col)
         main_col.add_stretch()
