@@ -1,8 +1,9 @@
-# nionswift_atom_manipulator
+nionswift_atom_manipulator
 
 Single-atom manipulation tool for Nion Swift
 
 -----
+T.B.A.
 -----
 
 **Installation**
@@ -20,12 +21,15 @@ Single-atom manipulation tool for Nion Swift
 
 2) In a terminal (Linux, MacOS) or command prompt (Windows) window, navigate to the root folder of this package.
 
-3) Install this package by executing the provided setup.py.
+3) Install this package by executing the provided setup.py:
+```
 $ python3 ./setup.py install
-OR
+```
+or
+```
 $ pip3 install .
+```
 
------
 -----
 
 **Acknowledgements**
@@ -34,5 +38,5 @@ Cordial thanks for coding and support go to
 - Toma Susi (https://github.com/TomaSusi)
 - Jacob Madsen (https://github.com/jacobjma)
 - Andreas Mittelberger (https://github.com/Brow71189)
-- Christoph Hofer ([T.B.A])
+- Christoph Hofer (https://github.com/christophhofer40)
 - Nion company (https://github.com/nion-software)
