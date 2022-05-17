@@ -32,7 +32,7 @@ _ = gettext.gettext
 # Main structure recognition function.
 def analyze_and_show(structure_recognition_module, auto_manipulate=False, live_analysis=False):
     if structure_recognition_module.manipulator.t1 is not None and structure_recognition_module.manipulator.t1.is_alive():
-            logging.info(lib_utils("Structure recognition still working. Wait until finished"))
+            logging.info(lib_utils.log_message("Structure recognition still working. Wait until finished"))
             return
         
     # Aliases.
@@ -43,8 +43,8 @@ def analyze_and_show(structure_recognition_module, auto_manipulate=False, live_a
     if auto_manipulate:
         structure_recognition_module.stop_live_analysis_event.clear()
         live_analysis = False
-        if imgsrc == "SELEC":
-            imgsrc = "FIRST" #Correct that if user has not changed "Image source"
+        if imgsrc == "SELEC": # Fix variable imgsrc if user has not changed it to MAADF or HAADF.
+            imgsrc = "FIRST"
         
     # Create processed data item if none exists.
     if manipulator.processed_data_item is None or manipulator.processed_data_item not in manipulator.api.library.data_items:
