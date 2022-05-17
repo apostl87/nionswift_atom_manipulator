@@ -2,32 +2,41 @@
 Utilities library.
 """
 
-import string
+import gettext
 import numpy as np
+
 import copy
+import logging
+
+import math
+import string
+
 from matplotlib import colors as mcolors
 from skimage import draw
-import logging
-import gettext
-try: from periodictable import elements as pt_elements
-except: pass
-import math
 
 # Non-standard packages
+try:
+    from periodictable import elements as pt_elements # Optional
+except:
+    pass
 from nionswift_plugin.double_gaussian_filter.computation import double_gaussian_blur as dgb
 
 _ = gettext.gettext
 
+
+# Convert two-dimensional indices to one-dimensional index.
 def sub2ind(rows, cols, array_shape):
     return rows * array_shape[1] + cols
 
 
+# Convert one-dimensional index to two-dimenionsal indices.
 def ind2sub(array_shape, ind):
     rows = (np.int32(ind) // array_shape[1])
     cols = (np.int32(ind) % array_shape[1])
     return (rows, cols)
 
 
+# Template class for modules.
 class AtomManipulatorModule(object):
 
     def __init__(self, ui, api, document_controller):
@@ -45,6 +54,7 @@ class AtomManipulatorModule(object):
         raise NotImplementedError()
 
 
+# Insert points into image.
 def plot_points(image, points, size=3, color="blue"):
     if points is None:
         return image
@@ -58,6 +68,7 @@ def plot_points(image, points, size=3, color="blue"):
     return image     
 
 
+# Insert paths into image.
 def plot_paths(image, paths):
     color = (0, 165, 255)
     for path in paths.members:
@@ -221,8 +232,10 @@ def elemental_identification(manipulator):
             labels.append( "n.a." )
         else:
             Z_estimator = (intensity / mean_intensity_carbon) ** (1/Z_exponent) * Z_carbon
-            try: labels.append( pt_elements[round(Z_estimator)] )
-            except: labels.append( str(round(Z_estimator,1)) )
+            try:
+                labels.append( pt_elements[round(Z_estimator)] )
+            except:
+                labels.append( str(round(Z_estimator,1)) )
         graphics.append( atom.graphic )
 
     def func():
@@ -230,17 +243,19 @@ def elemental_identification(manipulator):
             graphic.label = label
     manipulator.api.queue_task(func)
 
-
+# Helper function for elemental identification
 def integrate_intensities(data, maxima_locations, integration_radius=1):
     # data ... image data (numpy.ndarray)
     # integration_radius ... (scalar)
     # maxima_locations ... (N x 2 numpy.ndarray)
 
-    # Conditioning
-    if type(maxima_locations) is not np.ndarray:
-        maxima_locations = np.array(maxima_locations)
+    # Conditioning of inputs.
     if type(data) is not np.ndarray:
         data = np.array(data)
+    if type(maxima_locations) is not np.ndarray:
+        maxima_locations = np.array(maxima_locations)
+
+    # Aliases.
     shape = data.shape
     N = maxima_locations.shape[0]
     
@@ -257,7 +272,6 @@ def integrate_intensities(data, maxima_locations, integration_radius=1):
                 mask[i+integration_radius_floor, j+integration_radius_floor] = np.nan
     
     # Background subtraction.
-    #TODO check
     intensity_min = np.min(data)
     data_shifted = data - intensity_min
     
@@ -278,5 +292,6 @@ def integrate_intensities(data, maxima_locations, integration_radius=1):
     return values
 
 
+# Uniform log messages.
 def log_message(input: string):
     return f"Atom Manipulator: {input} "#.center(80, '-')
