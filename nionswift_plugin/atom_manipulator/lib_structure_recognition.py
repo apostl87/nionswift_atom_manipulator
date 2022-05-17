@@ -1,27 +1,34 @@
 """
-Structure recognition is performed by a deep convolutional neural network (NN).
-- Identification and separation of pristine lattice and contaminated areas (NN).
-- Recognition of atom positions in a 2D material (NN).
-- Detection of substitutional heteroatoms (ie. dopants) (NN).
-- Elemental identification: integration over specific radius (operational, but almost never works correctly #TODO).
+Structure recognition algorithm and library.
+- Performed by a deep convolutional neural network (NN).
+    1) Identification and separation of pristine lattice and contaminated areas (NN).
+    2) Recognition of atom positions in a 2D material (NN).
+    3) Detection of substitutional heteroatoms/dopants (NN).
+- Elemental identification of dopants: integration over specified radius and evaluation with a specified Z-radius.
 """
 
-import time
 import gettext
-import copy
 import threading
-import logging
-import math
 import numpy as np
-from .classes import atoms_and_bonds as aab
+
+import copy
+import time
+import logging
+
+import math
+
+# Non-standard packages
 from fourier_scale_calibration.fourier_scale_calibration import FourierSpaceCalibrator
 
+# Custom libraries
+from .classes import atoms_and_bonds as aab
 from . import lib_utils
 from . import lib_pathfinding 
 
 _ = gettext.gettext
    
-# Analysis main function.
+
+# Main structure recognition function.
 def analyze_and_show(sr_obj, auto_manipulate=False, live_analysis=False):
     if sr_obj.manipulator.t1 is not None and sr_obj.manipulator.t1.is_alive():
             logging.info(lib_utils("Structure recognition still working. Wait until finished"))
