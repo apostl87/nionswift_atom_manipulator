@@ -1,3 +1,7 @@
+"""
+Utilities library.
+"""
+
 import string
 import numpy as np
 import copy
@@ -8,6 +12,8 @@ import gettext
 try: from periodictable import elements as pt_elements
 except: pass
 import math
+
+# Non-standard packages
 from nionswift_plugin.double_gaussian_filter.computation import double_gaussian_blur as dgb
 
 _ = gettext.gettext
