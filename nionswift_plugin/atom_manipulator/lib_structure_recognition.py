@@ -30,18 +30,18 @@ _ = gettext.gettext
    
 
 # Main structure recognition function.
-def analyze_and_show(sr_obj, auto_manipulate=False, live_analysis=False):
-    if sr_obj.manipulator.t1 is not None and sr_obj.manipulator.t1.is_alive():
+def analyze_and_show(structure_recognition_module, auto_manipulate=False, live_analysis=False):
+    if structure_recognition_module.manipulator.t1 is not None and structure_recognition_module.manipulator.t1.is_alive():
             logging.info(lib_utils("Structure recognition still working. Wait until finished"))
             return
         
     # Aliases.
-    manipulator = sr_obj.manipulator
+    manipulator = structure_recognition_module.manipulator
 
     # Assign parameters.
-    imgsrc = sr_obj.image_source_combo_box.current_item[0:5].upper()
+    imgsrc = structure_recognition_module.image_source_combo_box.current_item[0:5].upper()
     if auto_manipulate:
-        sr_obj.stop_live_analysis_event.clear()
+        structure_recognition_module.stop_live_analysis_event.clear()
         live_analysis = False
         if imgsrc == "SELEC":
             imgsrc = "FIRST" #Correct that if user has not changed "Image source"
@@ -52,12 +52,12 @@ def analyze_and_show(sr_obj, auto_manipulate=False, live_analysis=False):
         lib_utils.create_pdi(manipulator)
 
     def do_this():
-        while not (not auto_manipulate and sr_obj.stop_live_analysis_event.is_set()) \
+        while not (not auto_manipulate and structure_recognition_module.stop_live_analysis_event.is_set()) \
               and \
               not (auto_manipulate and manipulator.manipulation_module.stop_auto_manipulate_event.is_set()):
                   
                 if not live_analysis:
-                    sr_obj.stop_live_analysis_event.set()
+                    structure_recognition_module.stop_live_analysis_event.set()
 
                 wait_time = 2
                 if manipulator.rdy_create_pdi.wait(wait_time): # wait for a maximum of {wait_time} seconds.
@@ -73,7 +73,7 @@ def analyze_and_show(sr_obj, auto_manipulate=False, live_analysis=False):
                 manipulator.tractor_beam_module.rdy.clear()
                 
                 if "SELEC" in imgsrc:
-                    sr_obj.stop_live_analysis_event.set()
+                    structure_recognition_module.stop_live_analysis_event.set()
                     tdi = manipulator.document_controller.target_data_item
                     manipulator.source_xdata = tdi.xdata
                     manipulator.source_title = tdi.title
@@ -105,7 +105,7 @@ def analyze_and_show(sr_obj, auto_manipulate=False, live_analysis=False):
                             break
                         
                 if auto_manipulate:
-                    sr_obj.new_image.set() # For TractorBeam module.
+                    structure_recognition_module.new_image.set() # For TractorBeam module.
                     
                 # Aliases.
                 pdi = manipulator.processed_data_item
@@ -113,23 +113,23 @@ def analyze_and_show(sr_obj, auto_manipulate=False, live_analysis=False):
 
                 if manipulator.source_xdata is None:
                     logging.info(lib_utils.log_message("No source data."))
-                    sr_obj.stop_live_analysis_event.set()
+                    structure_recognition_module.stop_live_analysis_event.set()
                     break
                 
                 # Calibrates the image scale based on a Fourier transform of the lattice.
-                if sr_obj.scale_calibration_mode == 1:
+                if structure_recognition_module.scale_calibration_mode == 1:
                     t = time.time()
                     logging.info(lib_utils.log_message("FourierSpaceCalibrator called."))
                 
                     calibrator = FourierSpaceCalibrator('hexagonal', 2.46)
-                    sr_obj.sampling = calibrator(manipulator.source_xdata.data)
-                    sr_obj.fov = [sr_obj.sampling*s for s in manipulator.source_xdata.data.shape]
+                    structure_recognition_module.sampling = calibrator(manipulator.source_xdata.data)
+                    structure_recognition_module.fov = [structure_recognition_module.sampling*s for s in manipulator.source_xdata.data.shape]
                 
                     t = time.time()-t
                     logging.info(lib_utils.log_message(f"FourierSpaceCalibrator finished after {t:.5f} seconds."))
                 else:
-                    # sr_obj.sampling must have been written before.
-                    if sr_obj.sampling is None:
+                    # structure_recognition_module.sampling must have been written before.
+                    if structure_recognition_module.sampling is None:
                         logging.info(lib_utils.log_message("Saved value for 'sampling' is None. Stopping..."))
                         return None # Stop manipulator.
 
@@ -137,7 +137,7 @@ def analyze_and_show(sr_obj, auto_manipulate=False, live_analysis=False):
                 t = time.time()
                 logging.info(lib_utils.log_message("Structure recognition called."))
                 
-                sr_obj.nn_output = sr_obj.model(manipulator.source_xdata.data, sr_obj.sampling)
+                structure_recognition_module.nn_output = structure_recognition_module.model(manipulator.source_xdata.data, structure_recognition_module.sampling)
                 
                 t = time.time()-t
                 logging.info(lib_utils.log_message(f"Structure recognition finished after {t:.5f} seconds."))
@@ -146,8 +146,8 @@ def analyze_and_show(sr_obj, auto_manipulate=False, live_analysis=False):
                 lib_utils.init_pdi(manipulator) # This is done here to give the user a possibility to look at the paths.
 
                 # Conditioning NN output
-                if sr_obj.nn_output is not None:
-                    manipulator.maxima_locations = np.fliplr(sr_obj.nn_output['points'])
+                if structure_recognition_module.nn_output is not None:
+                    manipulator.maxima_locations = np.fliplr(structure_recognition_module.nn_output['points'])
                     number_maxima = len(manipulator.maxima_locations)
                 else:
                     manipulator.maxima_locations = None
@@ -169,7 +169,7 @@ def analyze_and_show(sr_obj, auto_manipulate=False, live_analysis=False):
                 t = time.time()-t
                 logging.info(lib_utils.log_message(f"Setting sites (back end) finished after {t:.5f} seconds."))
         
-                if sr_obj.visualize_atoms:
+                if structure_recognition_module.visualize_atoms:
                     while not manipulator.rdy_init_pdi.wait(1):
                         pass
                     tmp_image = copy.copy(pdi.data)
@@ -238,8 +238,8 @@ def analyze_and_show(sr_obj, auto_manipulate=False, live_analysis=False):
                                                        f"and graphics finished after {t:.5f} seconds."))
                 
                 # Auto-detect of sources.
-                func_auto_detect_foreign_atoms(sr_obj)
-                sr_obj.rdy.set() # Signal that this is ready.
+                func_auto_detect_foreign_atoms(structure_recognition_module)
+                structure_recognition_module.rdy.set() # Signal that this is ready.
                 #print("why error when deleting a data item")
                 
                 # Integrate pathfinding in live analysis.
@@ -259,9 +259,9 @@ def create_site_and_connect_to_point_region(manipulator, loc, site_id, point_reg
     point_region.site = manipulator.sites[-1]
             
 # Auto-detect and display foreign atoms.
-def func_auto_detect_foreign_atoms(sr_obj):
+def func_auto_detect_foreign_atoms(structure_recognition_module):
     # aliases
-    manipulator = sr_obj.manipulator
+    manipulator = structure_recognition_module.manipulator
     rra = manipulator.rectangle_regions_auto # "rra" means rectangle regions auto-detected
     pdi = manipulator.processed_data_item
     shape = manipulator.source_xdata.data_shape
@@ -273,8 +273,8 @@ def func_auto_detect_foreign_atoms(sr_obj):
             manipulator.sources.remove(atom)
     
     foreigns_site_id = []
-    if sr_obj.auto_detect_foreign_atoms:
-        foreigns_site_id = np.nonzero(sr_obj.nn_output['labels'] == 1)[0]
+    if structure_recognition_module.auto_detect_foreign_atoms:
+        foreigns_site_id = np.nonzero(structure_recognition_module.nn_output['labels'] == 1)[0]
         logging.info(lib_utils.log_message(f"Detected {len(foreigns_site_id):d} foreign atoms."))
       
     relative_size = 0.05
