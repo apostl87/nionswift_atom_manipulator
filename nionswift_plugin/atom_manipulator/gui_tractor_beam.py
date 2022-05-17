@@ -43,6 +43,8 @@ class TractorBeamModule(AtomManipulatorModule):
         self.reposition_timeout = None
         self.jump_threshold = None
         self.drift_threshold = None
+        
+        # Events.
         self.rdy = threading.Event()
 
     # GUI creation method.

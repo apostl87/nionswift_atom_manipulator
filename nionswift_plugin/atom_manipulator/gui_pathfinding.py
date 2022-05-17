@@ -19,6 +19,8 @@ class PathFindingModule(AtomManipulatorModule):
         super().__init__(ui, api, document_controller)
         self.manipulator = manipulator # AtomManipulatorDelegate object
         self.max_bond_length = None # Internally Nion Swift calculates in nm.
+        
+        # Events.
         self.rdy = threading.Event()
 
     # GUI creation method. 

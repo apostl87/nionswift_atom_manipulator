@@ -42,10 +42,13 @@ class StructureRecognitionModule(AtomManipulatorModule):
         self.visualize_atoms = None
         self.live_analysis = None
         self.was_playing = None
+
+        self.model = load_preset_model('graphene')
+
+        # Events.
         self.stop_live_analysis_event = threading.Event()
         self.rdy = threading.Event()
         self.new_image = threading.Event()
-        self.model = load_preset_model('graphene')
     
     # GUI creation method.
     def create_widgets(self, column):
@@ -107,7 +110,7 @@ class StructureRecognitionModule(AtomManipulatorModule):
                 self.fov = [self.sampling*s for s in tdi.data.shape]
                 lib_utils.refresh_GUI(self.manipulator, ['sampling'])
             
-            # Run, not in main thread.
+            # Run in other thread.
             self.manipulator.t6 = threading.Thread(target = do_this, name = 'RealSpaceCalibrator')
             self.manipulator.t6.start()
 

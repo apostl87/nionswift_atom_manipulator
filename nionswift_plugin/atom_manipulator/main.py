@@ -73,9 +73,6 @@ class AtomManipulatorDelegate:
         self.t6 = None
         
         # Events.
-        self.sr_rdy = threading.Event() # Structure recognition ready
-        self.pf_rdy = threading.Event() # Pathfinding ready
-        self.tb_rdy = threading.Event() # Tractor Beam ready
         self.rdy_create_pdi = threading.Event()
         self.rdy_create_pdi.set()
         self.rdy_init_pdi = threading.Event()

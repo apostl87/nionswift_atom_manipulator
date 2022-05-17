@@ -22,6 +22,8 @@ class ManipulationModule(lib_utils.AtomManipulatorModule):
         super().__init__(ui, api, document_controller)
         self.manipulator = manipulator # AtomManipulatorDelegate object
         self.snapshot = None
+        
+        # Events.
         self.stop_auto_manipulate_event = threading.Event()
 
     # GUI creation method. 
