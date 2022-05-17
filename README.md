@@ -8,7 +8,7 @@ T.B.A.
 
 **Installation**
 
-1) Install the required Python packages, which are listed below (see also requirements.txt). These will not be installed by executing the provided setup.py.
+1. Install the required Python packages, which are listed below (see also requirements.txt). These will not be installed by executing the provided setup.py.
 - numpy
 - scipy
 - matplotlib
@@ -19,9 +19,9 @@ T.B.A.
 - nionswift_univie_tractorbeam (see [T.B.A.])
 - OPTIONAL: periodictable
 
-2) In a terminal (Linux, MacOS) or command prompt (Windows) window, navigate to the root folder of this package.
+2. In a terminal (Linux, MacOS) or command prompt (Windows) window, navigate to the root folder of this package.
 
-3) Install this package by executing the provided setup.py:
+3. Install this package by executing the provided setup.py:
 ```
 $ python3 ./setup.py install
 ```
