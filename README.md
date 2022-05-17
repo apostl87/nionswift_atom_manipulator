@@ -13,11 +13,11 @@ T.B.A.
 - scipy
 - matplotlib
 - scikit-image
-- periodictable
+- nionswift_double_gaussian (see [T.B.A.])
 - fourier_scale_calibration (see https://github.com/jacobjma/fourier-scale-calibration)
 - nionswift_structure_recognition (see https://github.com/jacobjma/nionswift-structure-recognition)
 - nionswift_univie_tractorbeam (see [T.B.A.])
-- nionswift_double_gaussian (see [T.B.A.])
+- OPTIONAL: periodictable
 
 2) In a terminal (Linux, MacOS) or command prompt (Windows) window, navigate to the root folder of this package.
 
