@@ -4,6 +4,7 @@ Single-atom manipulation tool for Nion Swift
 
 -----
 **Installation**
+--
 
 1. Install the required Python packages, which are listed below (see also requirements.txt). These will not be installed by executing the provided setup.py.
 - numpy
@@ -28,12 +29,20 @@ $ pip3 install .
 ```
 
 -----
-**Description**
+**Infographics**
+--
+![Task overview and description](./infographics/tasks-and-descriptions.png)
+--
+![Operating modes](./infographics/operating-modes.png)
 
-
+-----
+**Screenshot**
+--
+![Plug-in screenshot](./infographics/plugin-screenshot.png)
 
 -----
 **Acknowledgements**
+--
 
 Cordial thanks for coding and support go to
 - Toma Susi (https://github.com/TomaSusi)
