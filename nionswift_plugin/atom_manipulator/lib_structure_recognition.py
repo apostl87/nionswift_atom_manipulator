@@ -239,8 +239,9 @@ def analyze_and_show(structure_recognition_module, auto_manipulate=False, live_a
                 
                 # Auto-detect of sources.
                 func_auto_detect_foreign_atoms(structure_recognition_module)
-                structure_recognition_module.rdy.set() # Signal that this is ready.
-                #print("why error when deleting a data item")
+
+                # Trigger ready-event.
+                structure_recognition_module.rdy.set() 
                 
                 # Integrate pathfinding in live analysis.
                 if live_analysis and (len(manipulator.sources)>=0 and len(manipulator.targets)>=0):
@@ -248,21 +249,17 @@ def analyze_and_show(structure_recognition_module, auto_manipulate=False, live_a
                 
         if auto_manipulate:
             logging.info(lib_utils.log_message("Structure recognition stopped."))
-            
+
+    # Run in other thread. 
     manipulator.t1 = threading.Thread(target = do_this, name = 'do_this')
     manipulator.t1.start()
-    
-def create_site_and_connect_to_point_region(manipulator, loc, site_id, point_region):
-    manipulator.sites.append( aab.Site(loc[0], loc[1], site_id=site_id) )
-    # Mutual assignment
-    manipulator.sites[-1].graphic = point_region
-    point_region.site = manipulator.sites[-1]
+
             
 # Auto-detect and display foreign atoms.
 def func_auto_detect_foreign_atoms(structure_recognition_module):
-    # aliases
+    # Aliases.
     manipulator = structure_recognition_module.manipulator
-    rra = manipulator.rectangle_regions_auto # "rra" means rectangle regions auto-detected
+    rra = manipulator.rectangle_regions_auto
     pdi = manipulator.processed_data_item
     shape = manipulator.source_xdata.data_shape
     
@@ -290,20 +287,16 @@ def func_auto_detect_foreign_atoms(structure_recognition_module):
         loc = manipulator.maxima_locations[site_id]
         added = False
         
-        #debug anchor
-        #print(loc[0]/shape[0])
-        #print(loc[1]/shape[1])
-        
         if i < len(rra):
-            # Reposition if a graphic exists
+            # Reposition if a graphic exists.
             new_centers.append( (max(0, loc[0]/shape[0]), min(1, loc[1]/shape[1])) )
         else:
-            # Insert region
+            # Insert region.
             rra.append(pdi.add_rectangle_region( max(0, loc[0]/shape[0]), min(1, loc[1]/shape[1]), relative_size, relative_size ))
             added = True
                 
         manipulator.sources.append( aab.Atom(manipulator.sites[site_id], 'pseudo-element') )
-        # Mutual assignment
+        # Mutual variable assignment.
         rra[i].atom = manipulator.sources[-1]
         manipulator.sources[-1].graphic = rra[i]
         if added:
@@ -313,7 +306,7 @@ def func_auto_detect_foreign_atoms(structure_recognition_module):
         for i, center in enumerate(new_centers):
             rra[i].center = center
         
-    if len(rra) > number_foreigns: # Remove graphics
+    if len(rra) > number_foreigns: # Remove excess graphics.
         #print(" ! Removing excess RECTANGLE graphics ")
         manipulator.rectangle_regions_auto = rra[0:number_foreigns]
         def func():
@@ -321,14 +314,17 @@ def func_auto_detect_foreign_atoms(structure_recognition_module):
                 pdi.remove_region(rra[k])
         manipulator.api.queue_task(func)
     
-    def do_this(): # The following is threaded, because it is not needed for later processes.
+    # The following is threaded out, because it is not needed for later processes.
+    def do_this(): 
         lib_utils.refresh_GUI(manipulator, ['foreigns'])
         lib_utils.elemental_identification(manipulator)
     threading.Thread(target=do_this).start()
 
+
+# Clear all user-defined foreign atoms and target sites if scan parameters changed.
 def clear_user_defined_atoms_and_targets(manipulator):
     pdi = manipulator.processed_data_item
-    def func():
+    def do_this():
         with manipulator.api.library.data_ref_for_data_item(pdi):
             for region in manipulator.rectangle_regions:
                 pdi.remove_region(region)
@@ -336,7 +332,7 @@ def clear_user_defined_atoms_and_targets(manipulator):
                 pdi.remove_region(region)
         manipulator.rectangle_regions = []
         manipulator.ellipse_regions = []
-    manipulator.api.queue_task(func)
+    manipulator.api.queue_task(do_this) # Run in main thread.
     manipulator.sources = []
     manipulator.targets = []
 
