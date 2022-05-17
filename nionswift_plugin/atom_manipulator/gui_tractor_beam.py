@@ -37,11 +37,11 @@ class TractorBeamModule(AtomManipulatorModule):
 
     def __init__(self, ui, api, document_controller, manipulator=None):
         super().__init__(ui, api, document_controller)
+        self.manipulator = manipulator # AtomManipulatorDelegate object
         self.frame_timeout = None
         self.reposition_timeout = None
         self.jump_threshold = None
         self.drift_threshold = None
-        self.manipulator = manipulator
         self.rdy = threading.Event()
 
     # GUI creation method.
@@ -54,7 +54,6 @@ class TractorBeamModule(AtomManipulatorModule):
             logging.info(lib_utils.log_message("Starting TractorBeam"))
             try:
                 # In this (manual) operation mode, ADFFeedback needs to be stopped by a direct call of the method stopmap.
-
                 self.ADFFeedback = adffb.ADFFeedbackDelegate(
                     self.api,
                     offline_test_mode = self.otm_check_box.checked,
@@ -159,7 +158,7 @@ class TractorBeamModule(AtomManipulatorModule):
             self.ui, 'Preset', ['55 kV', '60 kV'], indent=False)
         self.preset_combo_box.on_current_item_changed = set_preset
         
-        # Defaults.
+        # Set defaults.
         self.preset_combo_box.current_item = defaults['preset']
 
         # Assemble GUI elements.
