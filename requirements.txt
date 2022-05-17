@@ -2,8 +2,8 @@ numpy
 scipy
 matplotlib
 scikit-image
-## fourier_scale_calibration # github.com/jacobjma/fourier-scale-calibration
-## nionswift_structure_recognition # github.com/jacobjma/nionswift-structure-recognition
-## nionswift_univie_tractorbeam
-## double_gaussian_filter
-periodictable # optional
+# double_gaussian_filter
+# fourier_scale_calibration # github.com/jacobjma/fourier-scale-calibration
+# nionswift_structure_recognition # github.com/jacobjma/nionswift-structure-recognition
+# nionswift_univie_tractorbeam
+## OPTIONAL: periodictable
