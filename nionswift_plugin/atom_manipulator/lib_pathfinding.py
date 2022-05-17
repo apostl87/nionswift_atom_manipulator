@@ -100,14 +100,13 @@ def find_paths(manipulator, auto_manipulate=False):
 
 # Wrapper for adding/removing foreign atoms / target sites
 def add_or_remove_foreign_atoms_or_target_sites(manipulator, mode=None, startstop=False):
-    
-    # Modes:
+    # Mode description:
     # 0 ... Add foreign atoms
     # 1 ... Remove foreign atoms
     # 2 ... Add target sites
     # 3 ... Remove target sites
 
-    # Alias for document_controller
+    # Aliases.
     dc = manipulator.document_controller
 
     if not hasattr(manipulator, 'original_mouse_clicked'):
