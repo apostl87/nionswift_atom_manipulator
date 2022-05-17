@@ -106,7 +106,8 @@ class StructureRecognitionModule(AtomManipulatorModule):
                 
                 self.fov = [self.sampling*s for s in tdi.data.shape]
                 lib_utils.refresh_GUI(self.manipulator, ['sampling'])
-            # Run calibration, but not in main thread.
+            
+            # Run, not in main thread.
             self.manipulator.t6 = threading.Thread(target = do_this, name = 'RealSpaceCalibrator')
             self.manipulator.t6.start()
 

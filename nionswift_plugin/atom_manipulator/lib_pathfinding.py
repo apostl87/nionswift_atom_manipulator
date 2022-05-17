@@ -27,7 +27,7 @@ _ = gettext.gettext
 # Main pathfinding function.
 def find_paths(manipulator, auto_manipulate=False):
 
-    if (manipulator.sites == []) and not auto_manipulate: # or (manipulator.targets is None):
+    if (manipulator.sites == []) and not auto_manipulate: # or (manipulator.targets is None) # obsolete
             logging.info(lib_utils.log_message("No sites found. Pathfinder aborted."))
             return
     if manipulator.t5 is not None and manipulator.t5.is_alive():
@@ -45,25 +45,26 @@ def find_paths(manipulator, auto_manipulate=False):
             else:
                 stop = True
 
-            # Aliases
+            # Aliases.
             pdi = manipulator.processed_data_item
             
-            # Set bonds
+            # Set bonds.
             t = time.time()
+
             logging.info(lib_utils.log_message("Setting bonds..."))
             max_bond_length_px = manipulator.source_xdata.dimensional_calibrations[0].convert_from_calibrated_size(
                     manipulator.pathfinding_module.max_bond_length/10)
-            if manipulator.simulation_mode:
+            if manipulator.simulation_mode: # Fix for wrong conversion in nionswift-usim fork
                 max_bond_length_px *= 10 # Wrong conversion im usim fork
             manipulator.bonds = aab.Bonds(manipulator.sites, max_bond_length_px)
             
             t = time.time()-t
             logging.info(lib_utils.log_message(f"Setting bonds finished after {t:.5f} seconds"))
             
-            # Call path finder
+            # Call path finder.
             t = time.time()
+
             logging.info(lib_utils.log_message("Pathfinder called."))
-            
             try:
                 manipulator.paths = paths.Paths(manipulator.sources, manipulator.targets)
             except ValueError as e:
@@ -72,7 +73,7 @@ def find_paths(manipulator, auto_manipulate=False):
             else:
                 manipulator.paths.determine_paths_nooverlap()
             
-            # Display paths
+            # Display paths.
             while not manipulator.rdy_init_pdi.wait(1) or not manipulator.rdy_update_pdi.wait(1):
                 pass
             tmp_image = copy.copy(pdi.data)
@@ -83,8 +84,11 @@ def find_paths(manipulator, auto_manipulate=False):
             t = time.time()-t
             logging.info(lib_utils.log_message(f"Pathfinder finished after {t:.5f} seconds"))
             
+            # Move probe if in "Auto Manipulation" operation mode.
             if auto_manipulate:
                 move_probe(manipulator)
+            
+            # Trigger ready-event.
             manipulator.pathfinding_module.rdy.set()
 
         if auto_manipulate:
