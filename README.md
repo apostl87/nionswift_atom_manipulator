@@ -13,7 +13,7 @@ T.B.A.
 - scipy
 - matplotlib
 - scikit-image
-- nionswift_double_gaussian (see [T.B.A.])
+- double_gaussian_blur (see https://github.com/arpostl/double_gaussian_blur)
 - fourier_scale_calibration (see https://github.com/jacobjma/fourier-scale-calibration)
 - nionswift_structure_recognition (see https://github.com/jacobjma/nionswift-structure-recognition)
 - nionswift_univie_tractorbeam (see [T.B.A.])

@@ -19,7 +19,7 @@ try:
     from periodictable import elements as pt_elements # Optional
 except:
     pass
-from nionswift_plugin.double_gaussian_filter.computation import double_gaussian_blur as dgb
+from double_gaussian_blur import dgb
 
 _ = gettext.gettext
 
