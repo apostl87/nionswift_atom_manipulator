@@ -1,9 +1,10 @@
 """
 Structure recognition algorithm and library.
 - Performed by a deep convolutional neural network (NN).
-    1) Identification and separation of pristine lattice and contaminated areas (NN).
-    2) Recognition of atom positions in a 2D material (NN).
-    3) Detection of substitutional heteroatoms/dopants (NN).
+    1) Calibration of the image scale with FourierScaleCalibrator or RealSpaceCalibrator.
+    2) Identification and separation of pristine lattice and contaminated areas.
+    3) Recognition of atom positions in a 2D material.
+    4) Detection of substitutional heteroatoms/dopants.
 - Elemental identification of dopants: integration over specified radius and evaluation with a specified Z-radius.
 """
 
