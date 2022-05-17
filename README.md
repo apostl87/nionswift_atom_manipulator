@@ -1,9 +1,7 @@
-nionswift_atom_manipulator
+# nionswift_atom_manipulator
 
 Single-atom manipulation tool for Nion Swift
 
------
-T.B.A.
 -----
 
 **Installation**
@@ -31,7 +29,10 @@ $ pip3 install .
 ```
 
 -----
+**Description**
 
+
+-----
 **Acknowledgements**
 
 Cordial thanks for coding and support go to
