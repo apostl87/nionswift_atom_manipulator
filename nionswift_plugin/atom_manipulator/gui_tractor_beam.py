@@ -15,10 +15,10 @@ _ = gettext.gettext
 
 # Parameter presets.
 presets = { '55 kV':
-               {'frame_timeout': '45',
-                'reposition_timeout': '2',
-                'jump_threshold': '12',
-                'drift_threshold': '4',
+               {'frame_timeout': '45', # Maximum wait until another frame is acquired (s).
+                'reposition_timeout': '2', # Time for user to reposition cursor before feedback started (s).
+                'jump_threshold': '12', # Minimum positive change in ADF intensity for detecting jump (%).
+                'drift_threshold': '4', # Minimum negative change in ADF intensity for detecting drift (%).
                 },
             '60 kV':
                {'frame_timeout': '15',
@@ -56,7 +56,7 @@ class TractorBeamModule(AtomManipulatorModule):
         def onbutton_clicked():
             logging.info(lib_utils.log_message("Starting TractorBeam"))
             try:
-                # In this (manual) operation mode, ADFFeedback needs to be stopped by a direct call of the method stopmap.
+                # In this (manual) operation mode, ADFFeedback needs to be stopped by direct call of the method stopmap.
                 self.ADFFeedback = adffb.ADFFeedbackDelegate(
                     self.api,
                     offline_test_mode = self.otm_check_box.checked,
@@ -120,7 +120,6 @@ class TractorBeamModule(AtomManipulatorModule):
             drift_threshold_editing_finished(presets[name]['drift_threshold'])
 
         ## GUI elements.
-
         # Offline test mode row.
         otm_row, self.otm_check_box = check_box_template(self.ui, 'Offline test mode')
         self.otm_check_box.checked = defaults['offline_test_mode']
@@ -134,15 +133,18 @@ class TractorBeamModule(AtomManipulatorModule):
         self.frame_timeout_line_edit.on_editing_finished = frame_timeout_editing_finished
 
         # Probe reposition timeout row.
-        reposition_timeout_row, self.reposition_timeout_line_edit = line_edit_template(self.ui, 'Reposition timeout [s]')
+        reposition_timeout_row, self.reposition_timeout_line_edit = line_edit_template(self.ui,
+                                                                                       'Reposition timeout [s]')
         self.reposition_timeout_line_edit.on_editing_finished = reposition_timeout_editing_finished
 
         # Jump threshold row.
-        jump_threshold_row, self.jump_threshold_line_edit = line_edit_template(self.ui, 'Auto-detect jump threshold [%]')
+        jump_threshold_row, self.jump_threshold_line_edit = line_edit_template(self.ui,
+                                                                               'Auto-detect jump threshold [%]')
         self.jump_threshold_line_edit.on_editing_finished = jump_threshold_editing_finished
 
         # Drift threshold row.
-        drift_threshold_row, self.drift_threshold_line_edit = line_edit_template(self.ui, 'Auto-detect drift threshold [%]')
+        drift_threshold_row, self.drift_threshold_line_edit = line_edit_template(self.ui,
+                                                                                 'Auto-detect drift threshold [%]')
         self.drift_threshold_line_edit.on_editing_finished = drift_threshold_editing_finished
         
         # Buttons row.

@@ -64,16 +64,18 @@ class ManipulationModule(lib_utils.AtomManipulatorModule):
                     self.manipulator.snapshot_counter = 1
                 else:
                     self.manipulator.snapshot_counter = None
-                lib_structure_recognition.analyze_and_show(self.manipulator.structure_recognition_module, auto_manipulate=True)
+                lib_structure_recognition.analyze_and_show(self.manipulator.structure_recognition_module,
+                                                           auto_manipulate=True)
 
                 # Pathfinding.
                 lib_pathfinding.find_paths(self.manipulator, auto_manipulate=True)
                 
                 # Tractor beam (wrapper).
                 try:
-                    # In this (auto-manipulation) operation mode, ADFFeedback itself listens to comm_events and will stop execution accordingly.
+                    # In this (auto-manipulation) operation mode, ADFFeedback itself listens to comm_events
+                    # and will stop execution accordingly.
                     
-                     # Communication events.
+                    # Communication events.
                     comm_events = [self.manipulator.structure_recognition_module.new_image,
                                    self.manipulator.pathfinding_module.rdy,
                                    self.manipulator.tractor_beam_module.rdy]
@@ -102,7 +104,8 @@ class ManipulationModule(lib_utils.AtomManipulatorModule):
                 automanip_button.text = _('Stop Auto-Manipulator')
             else:
                 self.stop_auto_manipulate_event.set()
-                automanip_button.text = _('Start Auto-Manipulator')     
+                automanip_button.text = _('Start Auto-Manipulator')
+
         automanip_button.on_clicked = automanip_button_clicked
         automanip_button_row = self.ui.create_row_widget()
         automanip_button_row.add(automanip_button)
