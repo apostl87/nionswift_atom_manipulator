@@ -75,8 +75,8 @@ def plot_paths(image, paths):
         for i in range(len(path.sitelist)-1):
             y1, x1 = path.sitelist[i].coords
             y2, x2 = path.sitelist[i+1].coords
-            # shorten the display of the bond
-            w = 1/5 # weight of position A
+            # Shorten the display of the bond.
+            w = 1/5 # Weight of position A.
             y1 = (y1*(1-w) + y2*w).round().astype(int)
             x1 = (x1*(1-w) + x2*w).round().astype(int)
             y2 = (y1*w + y2*(1-w)).round().astype(int)
@@ -108,7 +108,8 @@ def refresh_GUI(manipulator, var_strings):
                     f"N/A"
             else:
                 manipulator.structure_recognition_module.fov_label.text = \
-                    f"{manipulator.structure_recognition_module.fov[0]:.2f} x {manipulator.structure_recognition_module.fov[1]:.2f} Å^2"
+                    f"{manipulator.structure_recognition_module.fov[0]:.2f} x " \
+                    f"{manipulator.structure_recognition_module.fov[1]:.2f} Å^2"
                     
     manipulator.api.queue_task(func)
 
@@ -140,7 +141,7 @@ def init_pdi(manipulator):
             manipulator.rdy_create_pdi.clear()
             create_pdi(manipulator)
         while not manipulator.rdy_create_pdi.wait(1):
-            pass # waiting for creation of processed_data_item
+            pass # Waiting for creation of processed_data_item.
         manipulator.processed_data_item.title = _('[LIVE] ') + 'AtomManipulator_' + manipulator.source_title
         manipulator.processed_data_item.xdata = copy.deepcopy(manipulator.source_xdata)
         
@@ -153,7 +154,8 @@ def init_pdi(manipulator):
 
         if manipulator.snapshot_counter is not None:
             sdi = manipulator.api.library.snapshot_data_item(manipulator.processed_data_item)
-            sdi.title = _('AtomManipulator frame ' + str(manipulator.snapshot_counter) + ' RAW_' + manipulator.source_title)
+            sdi.title = _('AtomManipulator frame ' + str(manipulator.snapshot_counter) +
+                          ' RAW_' + manipulator.source_title)
             manipulator.snapshot_counter += 1
 
         manipulator.rdy_init_pdi.set()
@@ -173,7 +175,7 @@ def update_pdi(manipulator, new_data):
     manipulator.api.queue_task(func)
 
 
-# Support function: Add a listener to "graphic changed" events.
+# Support function: add a listener to "graphic changed" events.
 def add_listener_graphic_changed(manipulator, graphic):
     def check_site():
         shape = manipulator.source_xdata.data_shape
@@ -200,7 +202,7 @@ def elemental_identification(manipulator):
     while not manipulator.rdy_create_pdi.wait(1) or not manipulator.rdy_init_pdi.wait(1) or not manipulator.rdy_update_pdi.wait(1):
         pass # waiting for tasks on processed_data_item to be completed
     
-    # Aliases
+    # Aliases.
     sampling = manipulator.structure_recognition_module.sampling
     labels = manipulator.structure_recognition_module.nn_output['labels']
     int_radius_A = manipulator.structure_recognition_module.elemental_id_int_radius
@@ -211,7 +213,7 @@ def elemental_identification(manipulator):
         print("Elemental identfication cannot be perfomed, because there is no sampling value [Angstroem/px] available.")
         return
 
-    sigma1 = 0.25 # in Angstroems
+    sigma1 = 0.25 # in Angstroem
     sigma1 /= sampling
     data = dgb(manipulator.processed_data_item.original_data, sigma1=sigma1, sigma2=3*sigma1, weight2=0.4)
                
@@ -263,7 +265,7 @@ def integrate_intensities(data, maxima_locations, integration_radius=1):
     values = np.full(N, np.nan)
     
     # Create mask.
-    integration_radius_floor = math.floor(integration_radius) # integer value; NOT making the area of integration smaller
+    integration_radius_floor = math.floor(integration_radius) # integer value; NOT making area of integration smaller.
     M = 2*integration_radius_floor + 1
     mask = np.ones((M, M))
     for i in range(-integration_radius_floor, integration_radius_floor+1):
@@ -277,7 +279,7 @@ def integrate_intensities(data, maxima_locations, integration_radius=1):
     
     for i in range(N):
         # Location of a maximum.
-        loc = np.array(maxima_locations[i,:]+0.5, dtype=int) # integer values; pixel position in the image
+        loc = np.array(maxima_locations[i,:]+0.5, dtype=int) # Integer values; pixel position in the image.
         
         # Check if integration range is non-negative and smaller than shape, no try-block.
         lower = loc-integration_radius_floor
@@ -285,8 +287,8 @@ def integrate_intensities(data, maxima_locations, integration_radius=1):
         if any(lower < 0) or any(upper > np.array(shape)):
             #TODO For now, just skip that
             continue
-        else: # Do the integration
-            tmp = data_shifted[lower[0]:upper[0], lower[1]:upper[1]] # Shift minimum to 0
+        else: # Do the integration.
+            tmp = data_shifted[lower[0]:upper[0], lower[1]:upper[1]] # Shift minimum to 0.
             values[i] = np.nanmean( tmp*mask )
             
     return values
