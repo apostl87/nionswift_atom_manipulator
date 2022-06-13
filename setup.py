@@ -8,7 +8,7 @@ setuptools.setup(
     author_email="andreas.postl@univie.ac.at",
     description= "A Nion Swift plug-in for single-atom manipulation using a STEM electron beam",
     packages=["nionswift_plugin.atom_manipulator", "nionswift_plugin.atom_manipulator.classes"],
-    install_requires=[], # see requirements.txt and main.py
+    install_requires=[], # see README.md
     license='GPLv3',
     classifiers=[
         "Development Status :: 1 - Alpha",
