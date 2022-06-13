@@ -3,15 +3,15 @@
 Single-atom manipulation tool for Nion Swift
 
 -----
-**Prerequisite**
+**Prerequisites**
 --
-Anaconda environment with Nion Swift installed (see https://nionswift.readthedocs.io/en/stable/installation.html)
+Anaconda/Miniconda environment with Nion Swift installed (see https://nionswift.readthedocs.io/en/stable/installation.html)
 
 -----
 **Installation**
 --
 
-1. Activate the Anaconda environment with a Nion Swift installation. Install the required Python packages, which are listed below (see also requirements.txt). These will not be installed in step 3.
+1. Activate the Anaconda/Miniconda environment with your Nion Swift installation. Install the required Python packages, which are listed below (see also requirements.txt). These will not be installed in step 3.
     - numpy
     - scipy
     - matplotlib
