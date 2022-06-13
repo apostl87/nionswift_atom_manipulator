@@ -27,7 +27,7 @@ _ = gettext.gettext
 # Main pathfinding function.
 def find_paths(manipulator, auto_manipulate=False):
 
-    if (manipulator.sites == []) and not auto_manipulate: # or (manipulator.targets is None) # obsolete
+    if (manipulator.sites == []) and not auto_manipulate:
             logging.info(lib_utils.log_message("No sites found. Pathfinder aborted."))
             return
     if manipulator.t5 is not None and manipulator.t5.is_alive():
@@ -61,7 +61,7 @@ def find_paths(manipulator, auto_manipulate=False):
             t = time.time()-t
             logging.info(lib_utils.log_message(f"Setting bonds finished after {t:.5f} seconds"))
             
-            # Call path finder.
+            # Call pathfinder.
             t = time.time()
 
             logging.info(lib_utils.log_message("Pathfinder called."))
@@ -116,12 +116,14 @@ def add_or_remove_foreign_atoms_or_target_sites(manipulator, mode=None, startsto
         def on_mouse_clicked_custom(x, y, modifiers):
             manipulator.original_mouse_clicked(x, y, modifiers)
             if dc._document_controller.selected_display_panel.data_item == manipulator.processed_data_item._data_item:
-                canvas_item = dc._document_controller.selected_display_panel.root_container._RootCanvasItem__mouse_tracking_canvas_item
+                canvas_item = dc._document_controller.selected_display_panel.\
+                    root_container._RootCanvasItem__mouse_tracking_canvas_item
                 if canvas_item:
-                    canvas_item_point = dc._document_controller.selected_display_panel.root_container.map_to_canvas_item(Geometry.IntPoint(y=y, x=x), canvas_item)
+                    canvas_item_point = dc._document_controller.selected_display_panel.\
+                        root_container.map_to_canvas_item(Geometry.IntPoint(y=y, x=x), canvas_item)
                     if hasattr(canvas_item, 'map_widget_to_image'):
                         image_point = canvas_item.map_widget_to_image(canvas_item_point)
-                        # image_point contains the mouse click position in the image in pixels relative to top-left corner
+                        # image_point contains the mouse click position on the image in px relative to top-left corner.
                         if mode == 0 or mode == 2:
                             add_atom_or_site_near_image_point(manipulator, image_point, mode)
                         elif mode == 1 or mode == 3:

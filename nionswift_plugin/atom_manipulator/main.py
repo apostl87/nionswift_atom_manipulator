@@ -2,13 +2,13 @@ import gettext
 import threading
 import numpy as np
 
-# GUI classes
+# GUI classes.
 from .gui_tractor_beam import TractorBeamModule
 from .gui_pathfinding import PathFindingModule
 from .gui_structure_recognition import StructureRecognitionModule
 from .gui_manipulation import ManipulationModule
 
-# Custom libraries
+# Custom libraries.
 from . import lib_utils
 from .lib_widgets import ScrollArea, push_button_template
 
@@ -16,8 +16,8 @@ _ = gettext.gettext
 
 # Nion Swift device name strings.
 devices_dict = {
-    False: 'scan_controller', # physical scan device, simulation mode off
-    True: 'usim_scan_device' # simulation mode on
+    False: 'scan_controller', # Physical scan device, simulation mode off.
+    True: 'usim_scan_device' # Simulation mode on.
 }
 
 # Defaults on initialization.
@@ -41,8 +41,7 @@ class AtomManipulatorDelegate:
         self.superscan = None
         self.scan_parameters = None
         
-        ### Objects internal to the plug-in.
-
+        ## Objects internal to the plug-in.
         # GUI elements.
         self.simulation_mode = None
 
@@ -161,4 +160,4 @@ class AtomManipulatorExtension(object):
         # Close will be called when the extension is unloaded. In turn, close any references so they get closed.
         # This is not strictly necessary since the references will be deleted naturally when this object is deleted.
         self.__panel_ref.close()
-        self.__panel_ref = None 
+        self.__panel_ref = None

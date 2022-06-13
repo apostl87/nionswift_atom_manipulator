@@ -94,7 +94,7 @@ class StructureRecognitionModule(AtomManipulatorModule):
         
             calibrator = RealSpaceCalibrator(model=self.model,
                                template='hexagonal',
-                               lattice_constant=2.46,
+                               lattice_constant=2.46, # Graphene (in Angstroem)
                                min_sampling=min_sampling,
                                max_sampling=max_sampling,
                                step_size=step_size
@@ -119,7 +119,7 @@ class StructureRecognitionModule(AtomManipulatorModule):
                 item = self.image_source_combo_box.items[item]
             self.image_source_combo_box.current_item = item
             
-            # Save whether live analysis is checked when switching between MAADF and HAADF.
+            # Keep track of whether live analysis is checked when switching between MAADF and HAADF.
             try:
                 saved_var = self.live_analysis_check_box.checked
             except:
@@ -192,7 +192,6 @@ class StructureRecognitionModule(AtomManipulatorModule):
             self.start_stop_analysis_button.text = button_state_text[state]
 
         ## GUI elements.
-
         # Scale calibration rows.
         scale_calibration_row, self.scale_calibration_combo_box = combo_box_template(
             self.ui, 'Mode', ['Before run time (Real space with NN)', 'At run time (Fourier space)']
@@ -225,7 +224,8 @@ class StructureRecognitionModule(AtomManipulatorModule):
         self.visualize_atoms_check_box.on_checked_changed = visualize_atoms_changed
         
         # Foreign atom detection row.
-        auto_detect_foreign_atoms_row, self.auto_detect_foreign_atoms_check_box = check_box_template(self.ui, 'Auto-detect foreign atoms')
+        auto_detect_foreign_atoms_row, self.auto_detect_foreign_atoms_check_box = \
+            check_box_template(self.ui, 'Auto-detect foreign atoms')
         self.auto_detect_foreign_atoms_check_box.on_checked_changed = auto_detect_foreign_atoms_changed
 
         # Elemental identification rows.

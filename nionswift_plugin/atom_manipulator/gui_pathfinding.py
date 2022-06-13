@@ -39,9 +39,7 @@ class PathFindingModule(AtomManipulatorModule):
             add_remove_atoms_sites(3)
 
         #### GUI elements.
-
         ## Adding, removing, and displaying foreign atoms and target sites.
-        
         # Toggle text of buttons.
         def toggle_button1_text(): # Foreign atoms
             while True:
@@ -85,7 +83,6 @@ class PathFindingModule(AtomManipulatorModule):
         self.N_foreign_atoms_label = self.ui.create_label_widget('0')
         self.N_target_sites_label = self.ui.create_label_widget('0')
 
-
         def add_remove_atoms_sites(button_idx):
             last_mode = np.where(list(map(lambda x: x.state, self.add_remove_buttons)))[0]
             if last_mode.size > 0 and button_idx != last_mode[0]:
@@ -93,7 +90,9 @@ class PathFindingModule(AtomManipulatorModule):
                 self.add_remove_buttons[last_mode[0]].state = False
             self.add_remove_buttons[button_idx].text = next(buttons_text[button_idx])
             self.add_remove_buttons[button_idx].state = not self.add_remove_buttons[button_idx].state
-            lib_pathfinding.add_or_remove_foreign_atoms_or_target_sites(self.manipulator, mode=button_idx, startstop=self.add_remove_buttons[button_idx].state)
+            lib_pathfinding.add_or_remove_foreign_atoms_or_target_sites(self.manipulator,
+                                                                        mode=button_idx,
+                                                                        startstop=self.add_remove_buttons[button_idx].state)
 
         # Row widgets.
         foreign_atoms_row = self.ui.create_row_widget()
@@ -110,7 +109,7 @@ class PathFindingModule(AtomManipulatorModule):
         target_sites_row.add(self.remove_target_sites_button)
         target_sites_row.add_stretch()
         
-        ## Other widget rows.
+        # Other widget rows.
         max_bond_length_row, self.max_bond_length_line_edit = line_edit_template(self.ui, 'Max. bond length [A]')
         def max_bond_length_editing_finished(text):
             if len(text) > 0:

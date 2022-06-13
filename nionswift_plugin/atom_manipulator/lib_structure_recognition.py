@@ -32,7 +32,7 @@ _ = gettext.gettext
 # Main structure recognition function.
 def analyze_and_show(structure_recognition_module, auto_manipulate=False, live_analysis=False):
     if structure_recognition_module.manipulator.t1 is not None and structure_recognition_module.manipulator.t1.is_alive():
-            logging.info(lib_utils.log_message("Structure recognition still working. Wait until finished"))
+            logging.info(lib_utils.log_message("Structure recognition still working, wait until finished."))
             return
         
     # Aliases.
@@ -60,7 +60,7 @@ def analyze_and_show(structure_recognition_module, auto_manipulate=False, live_a
                     structure_recognition_module.stop_live_analysis_event.set()
 
                 wait_time = 2
-                if manipulator.rdy_create_pdi.wait(wait_time): # wait for a maximum of {wait_time} seconds.
+                if manipulator.rdy_create_pdi.wait(wait_time): # Wait for a maximum of {wait_time} seconds.
                     pass
                 else:
                     logging.info(lib_utils.log_message("Waiting for UI thread for more than {wait_time} seconds."
@@ -123,7 +123,8 @@ def analyze_and_show(structure_recognition_module, auto_manipulate=False, live_a
                 
                     calibrator = FourierSpaceCalibrator('hexagonal', 2.46)
                     structure_recognition_module.sampling = calibrator(manipulator.source_xdata.data)
-                    structure_recognition_module.fov = [structure_recognition_module.sampling*s for s in manipulator.source_xdata.data.shape]
+                    structure_recognition_module.fov = [structure_recognition_module.sampling*s
+                                                        for s in manipulator.source_xdata.data.shape]
                 
                     t = time.time()-t
                     logging.info(lib_utils.log_message(f"FourierSpaceCalibrator finished after {t:.5f} seconds."))
@@ -133,19 +134,20 @@ def analyze_and_show(structure_recognition_module, auto_manipulate=False, live_a
                         logging.info(lib_utils.log_message("Saved value for 'sampling' is None. Stopping..."))
                         return None # Stop manipulator.
 
-                # Call deep convolutional neural network.
+                # Call deep convolutional neural network (NN).
                 t = time.time()
                 logging.info(lib_utils.log_message("Structure recognition called."))
                 
-                structure_recognition_module.nn_output = structure_recognition_module.model(manipulator.source_xdata.data, structure_recognition_module.sampling)
+                structure_recognition_module.nn_output = \
+                    structure_recognition_module.model(manipulator.source_xdata.data, structure_recognition_module.sampling)
                 
                 t = time.time()-t
                 logging.info(lib_utils.log_message(f"Structure recognition finished after {t:.5f} seconds."))
 
                 manipulator.rdy_init_pdi.clear()
-                lib_utils.init_pdi(manipulator) # This is done here to give the user a possibility to look at the paths.
+                lib_utils.init_pdi(manipulator) # Done here to give the user a possibility to look at the paths.
 
-                # Conditioning NN output
+                # Conditioning NN output.
                 if structure_recognition_module.nn_output is not None:
                     manipulator.maxima_locations = np.fliplr(structure_recognition_module.nn_output['points'])
                     number_maxima = len(manipulator.maxima_locations)
@@ -182,7 +184,6 @@ def analyze_and_show(structure_recognition_module, auto_manipulate=False, live_a
                     clear_user_defined_atoms_and_targets(manipulator)
                 
                 else: # Reposition foreign atoms, target sites and the corresponding graphics.
-                    
                     all_coords = np.full((len(manipulator.sites), 2), np.nan)
                     if len(manipulator.sources) > 0 or len(manipulator.targets) > 0:
                         for i, site in enumerate(manipulator.sites):
@@ -237,7 +238,7 @@ def analyze_and_show(structure_recognition_module, auto_manipulate=False, live_a
                     logging.info(lib_utils.log_message(f"Repositioning of foreign atoms, target sites, "
                                                        f"and graphics finished after {t:.5f} seconds."))
                 
-                # Auto-detect of sources.
+                # Auto-detection of sources.
                 func_auto_detect_foreign_atoms(structure_recognition_module)
 
                 # Trigger ready-event.
@@ -292,7 +293,8 @@ def func_auto_detect_foreign_atoms(structure_recognition_module):
             new_centers.append( (max(0, loc[0]/shape[0]), min(1, loc[1]/shape[1])) )
         else:
             # Insert region.
-            rra.append(pdi.add_rectangle_region( max(0, loc[0]/shape[0]), min(1, loc[1]/shape[1]), relative_size, relative_size ))
+            rra.append(pdi.add_rectangle_region(max(0, loc[0]/shape[0]), min(1, loc[1]/shape[1]),
+                                                relative_size, relative_size ))
             added = True
                 
         manipulator.sources.append( aab.Atom(manipulator.sites[site_id], 'pseudo-element') )
