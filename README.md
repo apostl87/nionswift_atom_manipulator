@@ -31,14 +31,14 @@ $ pip3 install .
 -----
 **Infographics**
 --
-![Task overview and description](./infographics/tasks-and-descriptions.png)
+![Task overview and description](./graphics/infographics_tasks-and-descriptions.png)
 --
-![Operating modes](./infographics/operating-modes.png)
+![Operating modes](./graphics/infographics_operating-modes.png)
 
 -----
 **Screenshot**
 --
-![Plug-in screenshot](./infographics/plugin-screenshot.png)
+![Plug-in screenshot](./graphics/plugin-screenshot.png)
 
 -----
 **Acknowledgements**
