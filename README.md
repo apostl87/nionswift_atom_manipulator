@@ -42,7 +42,7 @@ $ pip3 install .
 ![Operating modes](./graphics/infographics_operating-modes.png)
 
 -----
-**Screenshot**
+**Screenshot of GUI**
 --
 ![Plug-in screenshot](./graphics/plugin-screenshot.png)
 
