@@ -108,7 +108,7 @@ class Bond:
 # Class reworked from C. Hofer        
 class Bonds:
     # sites ... list of class members of "Atom"
-    # <output> ... list of class members of "Bond"
+    # members ... list of class members of "Bond"
     
     def __init__(self, sites, max_bond_length, build_bonds_on_init_flag = True):
         self.members = []
