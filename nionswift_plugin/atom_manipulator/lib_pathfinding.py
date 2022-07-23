@@ -81,7 +81,7 @@ def find_paths(manipulator, auto_manipulate=False):
             lib_utils.plot_paths(tmp_image, manipulator.paths)
 
             # Append timestamp to metadata.
-            manipulator.metadata_to_append['timestamp_pathfinding_finished'] = time.time()
+            manipulator.metadata_to_append['timestamp_3_pathfinding_finished'] = time.time()
 
             # Update data item.
             manipulator.rdy_update_pdi.clear()

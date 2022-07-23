@@ -144,7 +144,7 @@ def init_pdi(manipulator):
             pass # Waiting for creation of processed_data_item.
         manipulator.processed_data_item.title = _('[LIVE] ') + 'AtomManipulator_' + manipulator.source_title
         xdata = copy.deepcopy(manipulator.source_xdata)
-        xdata.metadata['AtomManipulator'] = manipulator.metadata_to_append
+        xdata.metadata[manipulator.metadata_root_key] = manipulator.metadata_to_append
         
         # Snapshot RAW data if checkbox is checked
         if manipulator.snapshot_counter is not None:
@@ -179,7 +179,7 @@ def update_pdi(manipulator, new_data):
             pass
 
         metadata = copy.deepcopy(manipulator.processed_data_item.metadata)
-        metadata['AtomManipulator'] = manipulator.metadata_to_append
+        metadata[manipulator.metadata_root_key] = manipulator.metadata_to_append
         
         manipulator.processed_data_item.set_data(new_data)
         manipulator.processed_data_item.set_metadata(metadata)

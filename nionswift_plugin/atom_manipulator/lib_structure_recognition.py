@@ -50,9 +50,6 @@ def analyze_and_show(structure_recognition_module, auto_manipulate=False, live_a
     if manipulator.processed_data_item is None or manipulator.processed_data_item not in manipulator.api.library.data_items:
         manipulator.rdy_create_pdi.clear()
         lib_utils.create_pdi(manipulator)
-    
-    # Initiliaze or clear metadata to append
-    manipulator.metadata_to_append = dict()
 
     def do_this():
         while not (not auto_manipulate and structure_recognition_module.stop_live_analysis_event.is_set()) \
@@ -68,12 +65,15 @@ def analyze_and_show(structure_recognition_module, auto_manipulate=False, live_a
                 else:
                     logging.info(lib_utils.log_message("Waiting for UI thread for more than {wait_time} seconds."
                                                        "Possible code performance issue or a crashed thread."))
-             
+
                 if auto_manipulate:
                     if not manipulator.tractor_beam_module.rdy.wait(0.1):
                         #print("waiting for tb module")
                         continue
                 manipulator.tractor_beam_module.rdy.clear()
+
+                # Initiliaze or clear metadata to append
+                manipulator.metadata_to_append = dict()
                 
                 if "SELEC" in imgsrc:
                     structure_recognition_module.stop_live_analysis_event.set()
@@ -81,7 +81,7 @@ def analyze_and_show(structure_recognition_module, auto_manipulate=False, live_a
                     manipulator.source_xdata = tdi.xdata
                     manipulator.source_title = tdi.title
                     manipulator.metadata_to_append['was_live_feed'] = False
-                    manipulator.metadata_to_append['timestamp_data_feed'] = time.time()
+                    manipulator.metadata_to_append['timestamp_1_data_feed'] = time.time()
                     manipulator.scan_parameters_changed = True
                 else:
                     logging.info(lib_utils.log_message("Grabbing next STEM image ..."))
@@ -93,7 +93,7 @@ def analyze_and_show(structure_recognition_module, auto_manipulate=False, live_a
                         
                     last_record = manipulator.superscan.grab_next_to_finish()
                     manipulator.metadata_to_append['was_live_feed'] = True
-                    manipulator.metadata_to_append['timestamp_data_feed'] = time.time()
+                    manipulator.metadata_to_append['timestamp_1_data_feed'] = time.time()
                     for item in last_record:
                         if imgsrc == "FIRST" or item.metadata['hardware_source']['channel_name'] == imgsrc:
                             scan_parameters = manipulator.superscan.get_frame_parameters()
@@ -249,7 +249,7 @@ def analyze_and_show(structure_recognition_module, auto_manipulate=False, live_a
                     lib_utils.plot_points(tmp_image, manipulator.maxima_locations)
 
                 # Append timestamp to metadata.
-                manipulator.metadata_to_append['timestamp_structure_recognition_finished'] = time.time()
+                manipulator.metadata_to_append['timestamp_2_structure_recognition_finished'] = time.time()
                 
                 # Update data item.
                 manipulator.rdy_update_pdi.clear()

@@ -53,6 +53,7 @@ class AtomManipulatorDelegate:
         self.snapshot_counter = None
 
         # Metadata to append.
+        self.metadata_root_key = "AtomManipulator"
         self.metadata_to_append = None
         
         # Graphics objects.

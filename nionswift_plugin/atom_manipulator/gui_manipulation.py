@@ -40,7 +40,7 @@ class ManipulationModule(lib_utils.AtomManipulatorModule):
 
         # Snapshot row.
         snapshot_row = self.ui.create_row_widget()
-        self.snapshot_row_checkbox = self.ui.create_check_box_widget(_("Snapshot every frame (1x raw, 1x w/ insets)"))
+        self.snapshot_row_checkbox = self.ui.create_check_box_widget(_("Snapshot every frame (1x raw, 1x with insets)"))
         self.snapshot_row_checkbox.on_checked_changed = snapshot_changed
         snapshot_row.add_spacing(10)
         snapshot_row.add(self.snapshot_row_checkbox)
