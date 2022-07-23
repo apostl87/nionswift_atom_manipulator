@@ -5,7 +5,7 @@ Single-atom manipulation tool for Nion Swift
 -----
 **Prerequisites**
 --
-Anaconda/Miniconda environment with Nion Swift installed (see https://nionswift.readthedocs.io/en/stable/installation.html)
+Anaconda/Miniconda Python 3.8 environment with Nion Swift installed (see https://nionswift.readthedocs.io/en/stable/installation.html)
 
 -----
 **Installation**
