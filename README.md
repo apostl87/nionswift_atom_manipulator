@@ -17,7 +17,7 @@ Anaconda/Miniconda Python 3.8 environment with Nion Swift installed (see https:/
     - scipy
     - matplotlib
     - scikit-image
-3. *(optional: enables elemental identification)* Install the pip package periodictable.
+3. *(optional: enables element identification)* Install the pip package periodictable.
 4. Install the non-conda packages listed below. These will not be installed in step 5 as dependencies.
     - double_gaussian_blur (see https://github.com/arpostl/double_gaussian_blur)
     - fourier_scale_calibration (see https://github.com/jacobjma/fourier-scale-calibration)

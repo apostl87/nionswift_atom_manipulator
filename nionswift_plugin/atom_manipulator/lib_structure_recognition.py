@@ -5,7 +5,7 @@ Structure recognition algorithm and library.
     2) Identification and separation of pristine lattice and contaminated areas.
     3) Recognition of atom positions in a 2D material.
     4) Detection of substitutional heteroatoms/dopants.
-- Elemental identification of dopants: integration over specified radius and evaluation with a specified Z-radius.
+- Element identification of dopants: integration over specified radius and evaluation with a specified Z-radius.
 """
 
 import gettext
@@ -333,7 +333,7 @@ def func_auto_detect_foreign_atoms(structure_recognition_module):
     # The following is threaded out, because it is not needed for later processes.
     def do_this(): 
         lib_utils.refresh_GUI(manipulator, ['foreigns'])
-        lib_utils.elemental_identification(manipulator)
+        lib_utils.element_identification(manipulator)
     threading.Thread(target=do_this).start()
 
 

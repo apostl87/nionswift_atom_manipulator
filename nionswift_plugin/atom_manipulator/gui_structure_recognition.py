@@ -20,8 +20,8 @@ _ = gettext.gettext
 # Defaults on initialization.
 defaults = {'visualize_atoms': True,
             'auto_detect_foreign_atoms': False,
-            'elemental_identification_integration_radius_A': 0.25, # in Angstroem
-            'elemental_identification_exponent': 1.64,
+            'element_identification_integration_radius_A': 0.25, # in Angstroem
+            'element_identification_exponent': 1.64,
             'image_source': 0,   # 0: MAADF, 1: HAADF, 2: Selected data item
             'scale_calibration_mode': 1 # 0: Manual, 1: Live
             }
@@ -33,8 +33,8 @@ class StructureRecognitionModule(AtomManipulatorModule):
         super().__init__(ui, api, document_controller)
         self.manipulator = manipulator # AtomManipulatorDelegate object
         self.auto_detect_foreign_atoms = None
-        self.elemental_id_int_radius = None
-        self.elemental_id_exponent = None
+        self.element_id_int_radius = None
+        self.element_id_exponent = None
         self.nn_output = None
         self.scale_calibration_mode = None
         self.sampling = None
@@ -139,21 +139,21 @@ class StructureRecognitionModule(AtomManipulatorModule):
         def auto_detect_foreign_atoms_changed(checked):
             self.auto_detect_foreign_atoms = checked
 
-        def elemental_id_int_radius_changed(text):
+        def element_id_int_radius_changed(text):
             if len(text) > 0:
                 try:
-                    self.elemental_id_int_radius = float(text)
+                    self.element_id_int_radius = float(text)
                 except:
                     pass
                 finally:
-                    self.elemental_id_int_radius_line_edit.text = f"{self.elemental_id_int_radius:.2f}"
+                    self.element_id_int_radius_line_edit.text = f"{self.element_id_int_radius:.2f}"
 
-        def elemental_id_exponent_changed(text):
+        def element_id_exponent_changed(text):
             if len(text) > 0:
                 try:
-                    self.elemental_id_exponent = float(text)
+                    self.element_id_exponent = float(text)
                 except: pass
-                finally: self.elemental_id_exponent_line_edit.text = f"{self.elemental_id_exponent:.2f}"
+                finally: self.element_id_exponent_line_edit.text = f"{self.element_id_exponent:.2f}"
 
         def live_analysis_changed(checked):
             self.stop_live_analysis_event.set() # always stop live analysis
@@ -228,14 +228,14 @@ class StructureRecognitionModule(AtomManipulatorModule):
             check_box_template(self.ui, 'Auto-detect foreign atoms')
         self.auto_detect_foreign_atoms_check_box.on_checked_changed = auto_detect_foreign_atoms_changed
 
-        # Elemental identification rows.
-        elemental_id_row1, self.elemental_id_int_radius_line_edit = \
-            line_edit_template(self.ui, "Elemental ident.: Int. radius [A]: ")
-        self.elemental_id_int_radius_line_edit.on_editing_finished = elemental_id_int_radius_changed
+        # Element identification rows.
+        element_id_row1, self.element_id_int_radius_line_edit = \
+            line_edit_template(self.ui, "Element ident.: Int. radius [A]: ")
+        self.element_id_int_radius_line_edit.on_editing_finished = element_id_int_radius_changed
         
-        elemental_id_row2, self.elemental_id_exponent_line_edit = \
-            line_edit_template(self.ui, "Elemental ident.: Z-exponent: ")
-        self.elemental_id_exponent_line_edit.on_editing_finished = elemental_id_exponent_changed
+        element_id_row2, self.element_id_exponent_line_edit = \
+            line_edit_template(self.ui, "Element ident.: Z-exponent: ")
+        self.element_id_exponent_line_edit.on_editing_finished = element_id_exponent_changed
         
         # Control and start/stop analysis rows.
         live_analysis_row = self.ui.create_row_widget()        
@@ -260,8 +260,8 @@ class StructureRecognitionModule(AtomManipulatorModule):
         auto_detect_foreign_atoms_changed(self.auto_detect_foreign_atoms_check_box.checked)
         self.visualize_atoms_check_box.checked = defaults['visualize_atoms']
         visualize_atoms_changed(self.visualize_atoms_check_box.checked)
-        elemental_id_int_radius_changed(str(defaults['elemental_identification_integration_radius_A']))
-        elemental_id_exponent_changed(str(defaults['elemental_identification_exponent']))
+        element_id_int_radius_changed(str(defaults['element_identification_integration_radius_A']))
+        element_id_exponent_changed(str(defaults['element_identification_exponent']))
         image_source_changed(defaults['image_source'])
         scale_calibration_mode_changed(defaults['scale_calibration_mode'])
 
@@ -273,8 +273,8 @@ class StructureRecognitionModule(AtomManipulatorModule):
         section2.column.add(image_source_row)
         section2.column.add(visualize_atoms_row)
         section2.column.add(auto_detect_foreign_atoms_row)
-        section2.column.add(elemental_id_row1)
-        section2.column.add(elemental_id_row2)
+        section2.column.add(element_id_row1)
+        section2.column.add(element_id_row2)
         section2.column.add_spacing(5)
         section2.column.add(live_analysis_row)
         section2.column.add(start_stop_analysis_row)

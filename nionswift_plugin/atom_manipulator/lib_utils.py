@@ -209,8 +209,8 @@ def add_listener_graphic_changed(manipulator, graphic):
     manipulator.listeners.append( graphic._graphic.graphic_changed_event.listen(check_site) )
 
 
-# Elemental identification.
-def elemental_identification(manipulator):
+# Element identification.
+def element_identification(manipulator):
     # Calculate intensity values.
     while not manipulator.rdy_create_pdi.wait(1) or not manipulator.rdy_init_pdi.wait(1) or not manipulator.rdy_update_pdi.wait(1):
         pass # waiting for tasks on processed_data_item to be completed
@@ -218,12 +218,12 @@ def elemental_identification(manipulator):
     # Aliases.
     sampling = manipulator.structure_recognition_module.sampling
     labels = manipulator.structure_recognition_module.nn_output['labels']
-    int_radius_A = manipulator.structure_recognition_module.elemental_id_int_radius
-    Z_exponent = manipulator.structure_recognition_module.elemental_id_exponent
+    int_radius_A = manipulator.structure_recognition_module.element_id_int_radius
+    Z_exponent = manipulator.structure_recognition_module.element_id_exponent
     
     # Get double Gaussian blur.
     if np.isnan(sampling):
-        print("Elemental identfication cannot be perfomed, because there is no sampling value [Angstroem/px] available.")
+        print("Element identfication cannot be perfomed, because there is no sampling value [Angstroem/px] available.")
         return
 
     sigma1 = 0.25 # in Angstroem
@@ -258,7 +258,7 @@ def elemental_identification(manipulator):
             graphic.label = label
     manipulator.api.queue_task(func)
 
-# Helper function for elemental identification
+# Helper function for element identification
 def integrate_intensities(data, maxima_locations, integration_radius=1):
     # data ... image data (numpy.ndarray)
     # integration_radius ... (scalar)
