@@ -3,7 +3,7 @@ import os
 
 setuptools.setup(
     name="nionswift_atom_manipulator",
-    version="1.2",
+    version="1.2.1",
     author="Andreas Postl",
     author_email="andreas.postl@univie.ac.at",
     description= "A Nion Swift plug-in for single-atom manipulation using a STEM electron beam",
