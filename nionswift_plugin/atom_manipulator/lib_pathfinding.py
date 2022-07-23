@@ -73,21 +73,27 @@ def find_paths(manipulator, auto_manipulate=False):
             else:
                 manipulator.paths.determine_paths_nooverlap()
             
-            # Display paths.
+            # Plot paths.
             while not manipulator.rdy_init_pdi.wait(1) or not manipulator.rdy_update_pdi.wait(1):
                 pass
+
             tmp_image = copy.copy(pdi.data)
             lib_utils.plot_paths(tmp_image, manipulator.paths)
+
+            # Append timestamp to metadata.
+            manipulator.metadata_to_append['timestamp_pathfinding_finished'] = time.time()
+
+            # Update data item.
             manipulator.rdy_update_pdi.clear()
             lib_utils.update_pdi(manipulator, tmp_image)
     
-            t = time.time()-t
-            logging.info(lib_utils.log_message(f"Pathfinder finished after {t:.5f} seconds"))
+            t_end = time.time()
+            logging.info(lib_utils.log_message(f"Pathfinder finished after {t_end-t:.5f} seconds"))
             
             # Move probe if in "Auto Manipulation" operation mode.
             if auto_manipulate:
                 move_probe(manipulator)
-            
+
             # Trigger ready-event.
             manipulator.pathfinding_module.rdy.set()
 

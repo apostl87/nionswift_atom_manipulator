@@ -46,12 +46,12 @@ class ManipulationModule(lib_utils.AtomManipulatorModule):
         snapshot_row.add(self.snapshot_row_checkbox)
         
         # Button row (Start/Stop).
-        automanip_button = self.ui.create_push_button_widget(_("Start automatical manipulation"))
+        automanip_button = self.ui.create_push_button_widget(_("Start automated manipulation"))
         automanip_button.state = False
         def automanip_button_clicked():
             automanip_button.state = not automanip_button.state
             if automanip_button.state:
-                logging.info(lib_utils.log_message("Starting automatical manipulation ..."))
+                logging.info(lib_utils.log_message("Starting automated manipulation ..."))
                 ## Init
                 self.manipulator.tractor_beam_module.rdy.set()
                 self.manipulator.pathfinding_module.rdy.clear()

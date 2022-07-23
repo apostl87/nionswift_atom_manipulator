@@ -143,20 +143,25 @@ def init_pdi(manipulator):
         while not manipulator.rdy_create_pdi.wait(1):
             pass # Waiting for creation of processed_data_item.
         manipulator.processed_data_item.title = _('[LIVE] ') + 'AtomManipulator_' + manipulator.source_title
-        manipulator.processed_data_item.xdata = copy.deepcopy(manipulator.source_xdata)
+        xdata = copy.deepcopy(manipulator.source_xdata)
+        xdata.metadata['AtomManipulator'] = manipulator.metadata_to_append
         
-        data = np.array(manipulator.processed_data_item.data)
-        manipulator.processed_data_item.original_data_rgb = np.tile(
-            ((data - data.min()) / data.ptp() * 255).astype(np.uint8)[..., None], (1, 1, 3))
-        manipulator.processed_data_item.original_data = data
-        
-        manipulator.processed_data_item.data = manipulator.processed_data_item.original_data_rgb
-
+        # Snapshot RAW data if checkbox is checked
         if manipulator.snapshot_counter is not None:
             sdi = manipulator.api.library.snapshot_data_item(manipulator.processed_data_item)
             sdi.title = _('AtomManipulator frame ' + str(manipulator.snapshot_counter) +
                           ' RAW_' + manipulator.source_title)
             manipulator.snapshot_counter += 1
+
+        # Convert data to RGB values, save original data as well as rgb data in data item
+        data = np.array(xdata.data)
+        manipulator.processed_data_item.original_data = data
+        manipulator.processed_data_item.rgb_data = np.tile(
+            ((data - data.min()) / data.ptp() * 255).astype(np.uint8)[..., None], (1, 1, 3))
+        
+        # Set data and metadata of data item
+        manipulator.processed_data_item.set_data(manipulator.processed_data_item.rgb_data)
+        manipulator.processed_data_item.set_metadata(xdata.metadata)
 
         manipulator.rdy_init_pdi.set()
     manipulator.api.queue_task(func)
@@ -170,7 +175,13 @@ def update_pdi(manipulator, new_data):
             init_pdi()
         while not manipulator.rdy_init_pdi.wait(1):
             pass
-        manipulator.processed_data_item.data = new_data
+
+        metadata = copy.deepcopy(manipulator.processed_data_item.metadata)
+        metadata['AtomManipulator'] = manipulator.metadata_to_append
+        
+        manipulator.processed_data_item.set_data(new_data)
+        manipulator.processed_data_item.set_metadata(metadata)
+        
         manipulator.rdy_update_pdi.set()
     manipulator.api.queue_task(func)
 

@@ -50,6 +50,9 @@ def analyze_and_show(structure_recognition_module, auto_manipulate=False, live_a
     if manipulator.processed_data_item is None or manipulator.processed_data_item not in manipulator.api.library.data_items:
         manipulator.rdy_create_pdi.clear()
         lib_utils.create_pdi(manipulator)
+    
+    # Initiliaze or clear metadata to append
+    manipulator.metadata_to_append = dict()
 
     def do_this():
         while not (not auto_manipulate and structure_recognition_module.stop_live_analysis_event.is_set()) \
@@ -77,6 +80,8 @@ def analyze_and_show(structure_recognition_module, auto_manipulate=False, live_a
                     tdi = manipulator.document_controller.target_data_item
                     manipulator.source_xdata = tdi.xdata
                     manipulator.source_title = tdi.title
+                    manipulator.metadata_to_append['was_live_feed'] = False
+                    manipulator.metadata_to_append['timestamp_data_feed'] = time.time()
                     manipulator.scan_parameters_changed = True
                 else:
                     logging.info(lib_utils.log_message("Grabbing next STEM image ..."))
@@ -87,6 +92,8 @@ def analyze_and_show(structure_recognition_module, auto_manipulate=False, live_a
                         manipulator.superscan.stop_playing()
                         
                     last_record = manipulator.superscan.grab_next_to_finish()
+                    manipulator.metadata_to_append['was_live_feed'] = True
+                    manipulator.metadata_to_append['timestamp_data_feed'] = time.time()
                     for item in last_record:
                         if imgsrc == "FIRST" or item.metadata['hardware_source']['channel_name'] == imgsrc:
                             scan_parameters = manipulator.superscan.get_frame_parameters()
@@ -134,15 +141,15 @@ def analyze_and_show(structure_recognition_module, auto_manipulate=False, live_a
                         logging.info(lib_utils.log_message("Saved value for 'sampling' is None. Stopping..."))
                         return None # Stop manipulator.
 
-                # Call deep convolutional neural network (NN).
+                # Call deep convolutional neural network (DCNN).
                 t = time.time()
-                logging.info(lib_utils.log_message("Structure recognition called."))
+                logging.info(lib_utils.log_message("Neural network called for structure recognition."))
                 
                 structure_recognition_module.nn_output = \
                     structure_recognition_module.model(manipulator.source_xdata.data, structure_recognition_module.sampling)
-                
+
                 t = time.time()-t
-                logging.info(lib_utils.log_message(f"Structure recognition finished after {t:.5f} seconds."))
+                logging.info(lib_utils.log_message(f"Neural network returned result after {t:.5f} seconds."))
 
                 manipulator.rdy_init_pdi.clear()
                 lib_utils.init_pdi(manipulator) # Done here to give the user a possibility to look at the paths.
@@ -166,19 +173,11 @@ def analyze_and_show(structure_recognition_module, auto_manipulate=False, live_a
                     manipulator.sites.append( aab.Site(
                         loc[0], loc[1], site_id=i) )
                         
-                # Refresh GUI.
                 lib_utils.refresh_GUI(manipulator, ['atoms', 'sampling'])
+
                 t = time.time()-t
                 logging.info(lib_utils.log_message(f"Setting sites (back end) finished after {t:.5f} seconds."))
-        
-                if structure_recognition_module.visualize_atoms:
-                    while not manipulator.rdy_init_pdi.wait(1):
-                        pass
-                    tmp_image = copy.copy(pdi.data)
-                    lib_utils.plot_points(tmp_image, manipulator.maxima_locations)
-                    manipulator.rdy_update_pdi.clear()
-                    lib_utils.update_pdi(manipulator, tmp_image)
-       
+            
                 # Try to keep target sites and foreign atoms till the next frame.
                 if manipulator.scan_parameters_changed: # re-init
                     clear_user_defined_atoms_and_targets(manipulator)
@@ -234,12 +233,27 @@ def analyze_and_show(structure_recognition_module, auto_manipulate=False, live_a
                     manipulator.api.queue_task(reposition_foreign_atom_graphics)
                     
                     t = time.time()-t
-                    #devel anchor
+                    
                     logging.info(lib_utils.log_message(f"Repositioning of foreign atoms, target sites, "
                                                        f"and graphics finished after {t:.5f} seconds."))
                 
                 # Auto-detection of sources.
                 func_auto_detect_foreign_atoms(structure_recognition_module)
+
+                # Draw atom positions if checkbox is checked.
+                while not manipulator.rdy_init_pdi.wait(1):
+                        pass
+                
+                tmp_image = copy.copy(pdi.data)
+                if structure_recognition_module.visualize_atoms:
+                    lib_utils.plot_points(tmp_image, manipulator.maxima_locations)
+
+                # Append timestamp to metadata.
+                manipulator.metadata_to_append['timestamp_structure_recognition_finished'] = time.time()
+                
+                # Update data item.
+                manipulator.rdy_update_pdi.clear()
+                lib_utils.update_pdi(manipulator, tmp_image)               
 
                 # Trigger ready-event.
                 structure_recognition_module.rdy.set() 

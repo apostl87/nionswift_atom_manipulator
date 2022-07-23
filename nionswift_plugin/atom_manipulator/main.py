@@ -51,6 +51,9 @@ class AtomManipulatorDelegate:
 
         # Data item numbering.
         self.snapshot_counter = None
+
+        # Metadata to append.
+        self.metadata_to_append = None
         
         # Graphics objects.
         self.point_regions = []
