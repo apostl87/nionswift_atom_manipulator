@@ -32,6 +32,8 @@ class Path(object):
         # Neighbors are also configured to be blocking
         for b in self.list_blockers:
             tmp = np.append(b.site, b.site.neighbors)
+            for n in b.site.neighbors:
+                tmp = np.append(tmp, n.neighbors) # second-nearest neighbors also block
             out = np.append(out, tmp) 
             caused_by = np.append(caused_by, np.repeat(b, len(tmp)))
         return out, caused_by
