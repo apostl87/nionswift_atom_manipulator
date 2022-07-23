@@ -148,6 +148,8 @@ def init_pdi(manipulator):
         
         # Snapshot RAW data if checkbox is checked
         if manipulator.snapshot_counter is not None:
+            manipulator.processed_data_item.set_data_and_metadata(xdata)
+
             sdi = manipulator.api.library.snapshot_data_item(manipulator.processed_data_item)
             sdi.title = _('AtomManipulator frame ' + str(manipulator.snapshot_counter) +
                           ' RAW_' + manipulator.source_title)

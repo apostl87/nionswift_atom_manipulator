@@ -101,10 +101,10 @@ class ManipulationModule(lib_utils.AtomManipulatorModule):
                     print(exc)
 
                 # Change button text.
-                automanip_button.text = _('Stop Auto-Manipulator')
+                automanip_button.text = _('Stop automated manipulation')
             else:
                 self.stop_auto_manipulate_event.set()
-                automanip_button.text = _('Start Auto-Manipulator')
+                automanip_button.text = _('Start automated manipulation')
 
         automanip_button.on_clicked = automanip_button_clicked
         automanip_button_row = self.ui.create_row_widget()
