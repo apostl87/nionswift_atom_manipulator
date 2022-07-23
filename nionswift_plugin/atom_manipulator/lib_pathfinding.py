@@ -55,7 +55,7 @@ def find_paths(manipulator, auto_manipulate=False):
             max_bond_length_px = manipulator.source_xdata.dimensional_calibrations[0].convert_from_calibrated_size(
                     manipulator.pathfinding_module.max_bond_length/10)
             if manipulator.simulation_mode: # Fix for wrong conversion in nionswift-usim fork
-                max_bond_length_px *= 10 # Wrong conversion im usim fork
+                max_bond_length_px *= 1 # Conversion in usim fork had been fixed
             manipulator.bonds = aab.Bonds(manipulator.sites, max_bond_length_px)
             
             t = time.time()-t
