@@ -21,7 +21,7 @@ _ = gettext.gettext
 defaults = {'visualize_atoms': True,
             'auto_detect_foreign_atoms': False,
             'elemental_identification_integration_radius_A': 0.25, # in Angstroem
-            'elemental_identification_exponent': 1.8,
+            'elemental_identification_exponent': 1.64,
             'image_source': 0,   # 0: MAADF, 1: HAADF, 2: Selected data item
             'scale_calibration_mode': 1 # 0: Manual, 1: Live
             }
