@@ -245,21 +245,41 @@ class Paths(object):
             print(txt)
         
     def hungarian_lap(self):
+        #  ----------- scipy.optimize.linear_sum_assignment ---------
+        #  https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.linear_sum_assignment.html
+        #
+        #  Scipy 0.18.1
+        #  ------------
         #  The Hungarian algorithm for the (linear) assignment problem
         #  also known as the Munkres or Kuhn-Munkres algorithm
-        #  Kuhn (1955), Munkres (1957)
+        #  Kuhn (1955), Munkres (1957)        
         #
-        # TODO: It is probably not the least total cost length
-        # (sum of all path lengths) at every instant, if M \neq N
-        
-        N = min(len(self.target_sites), len(self.atoms))
-        if len(self.atoms) != len(self.target_sites):
-            print(" Warning: Number of atoms is not equal to the number of target sites." +
-                  " Reliable functionality for this case is not implemented." + 
-                  " This could lead to unintended behavior and/or exceptions.")
+        #  Scipy 1.8.1
+        #  ------------
+        #  Modified Jonker-Volgenant algorithm with no initialization. Described in:
+        #  DF Crouse. On implementing 2D rectangular assignment algorithms. 
+        #  IEEE Transactions on Aerospace and Electronic Systems, 52(4):1679-1696, August 2016,
+        #  DOI: 10.1109/TAES.2016.140952
+
+
+        ## Symmetrical problem
+        # N = min(len(self.target_sites), len(self.atoms))
+        # M = N
+        #if len(self.atoms) != len(self.target_sites):
+        #    print(" Warning: Number of atoms is not equal to the number of target sites." +
+        #          " Reliable functionality for this case is not implemented." + 
+        #          " This could lead to unintended behavior and/or exceptions.")
+
+
+        ## Asymmetrical problem
+        # Computational effort is raised by (max(M,N) choose min(M,N)) if M is uneqal to N
+        M = len(self.atoms)
+        N = len(self.target_sites)
+
+
         # Cost matrix
-        C = np.zeros((N, N))
-        for i in range(N):
+        C = np.zeros((M, N))
+        for i in range(M):
             for j in range(N):
                 C[i, j] = self.atoms[i].site.distance(self.target_sites[j])
         row_ind, col_ind = lsa(C)
