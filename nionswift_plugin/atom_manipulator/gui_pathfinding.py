@@ -124,13 +124,11 @@ class PathFindingModule(AtomManipulatorModule):
         target_sites_row.add_stretch()
         
         ## Avoid neighbors of foreign atoms.
-        avoid_neighbors_row, self.avoid_1nn_check_box = check_box_template(self.ui, _('Avoid 1NN'))
+        avoid_1nn_row, self.avoid_1nn_check_box = check_box_template(self.ui, _('Avoid nearest neighbors'))
         self.avoid_1nn_check_box.on_checked_changed = avoid_1nn_changed
 
-        self.avoid_2nn_check_box = self.ui.create_check_box_widget(_('Avoid 2NN'))
+        avoid_2nn_row, self.avoid_2nn_check_box = check_box_template(self.ui, _('Avoid second-nearest neighbors'))
         self.avoid_2nn_check_box.on_checked_changed = avoid_2nn_changed
-
-        avoid_neighbors_row.add(self.avoid_2nn_check_box)
 
         ## Maximum bond length.
         max_bond_length_row, self.max_bond_length_line_edit = line_edit_template(self.ui, 'Max. bond length [A]')
@@ -164,5 +162,6 @@ class PathFindingModule(AtomManipulatorModule):
         self.section.column.add(foreign_atoms_row)
         self.section.column.add(target_sites_row)
         self.section.column.add(max_bond_length_row)
-        self.section.column.add(avoid_neighbors_row)
+        self.section.column.add(avoid_1nn_row)
+        self.section.column.add(avoid_2nn_row)
         self.section.column.add(find_paths_row)
