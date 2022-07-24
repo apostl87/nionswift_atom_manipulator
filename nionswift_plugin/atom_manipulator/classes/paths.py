@@ -5,7 +5,8 @@ from scipy.optimize import linear_sum_assignment as lsa
 
 class Path(object):
     
-    def __init__(self, site1, site2, a_id=0, list_blockers = [], list_banned = [], is_subpath=False):
+    def __init__(self, site1, site2, a_id=0, list_blockers = [], list_banned = [], is_subpath=False,
+                avoid_nearest_neighbors=True, avoid_second_nearest_neighbors=True):
         self.debug_print = False # Some lines with print commands are inserted for debugging
         
         self.start = site1
@@ -20,6 +21,8 @@ class Path(object):
         # flags
         self.is_subpath = is_subpath
         self.is_valid = None
+        self.avoid_1nn = avoid_nearest_neighbors
+        self.avoid_2nn = avoid_second_nearest_neighbors
         
     def print_sitelist(self):
         txt = "Current path is (site ids): "
@@ -31,34 +34,49 @@ class Path(object):
         self.list_banned.append(site)
 
     def blocking_sites(self):
+        out1 = []
+        out2 = []
+
         # Sites of atoms directly
         out0 = [x.site for x in self.list_blockers]
 
-        # Sites of nearest neighbors
-        out1 = [x.neighbors for x in out0]
+        # If nearest neighbors are also configured to block.
+        if self.avoid_1nn:
+            out1 = [x.neighbors for x in out0]
 
-        # Sites of second-nearest neighbors
-        out2 = []
-        for i, nearest_neighbors in enumerate(out1):
-            second_neighbors = []
-            for nearest_neighbor in nearest_neighbors:
-                for n in nearest_neighbor.neighbors:
-                    if n is not out0[i]:
-                        second_neighbors.append(n)
-            out2.append(second_neighbors)
+            # If second-nearest neighbors are also configured to block.
+            if self.avoid_2nn:
+                for i, nearest_neighbors in enumerate(out1):
+                    second_neighbors = []
+                    for nearest_neighbor in nearest_neighbors:
+                        for n in nearest_neighbor.neighbors:
+                            if n is not out0[i]:
+                                second_neighbors.append(n)
+                    out2.append(second_neighbors)
 
         return out0, out1, out2
             
     def blocked(self):
         out = np.array([])
         caused_by = np.array([])
-        # Neighbors are also configured to be blocking
+       
         for b in self.list_blockers:
-            tmp = np.append(b.site, b.site.neighbors)
-            for n in b.site.neighbors:
-                tmp = np.append(tmp, n.neighbors) # second-nearest neighbors also block
-            out = np.append(out, tmp) 
+            tmp = np.array([])
+            tmp = np.append(tmp, b.site)
+
+            # If nearest neighbors are also configured to block.
+            if self.avoid_1nn:
+                tmp = np.append(tmp, b.site.neighbors)
+
+                # If second-nearest neighbors are also configured to block.
+                if self.avoid_2nn:
+                    for n in b.site.neighbors:
+                        tmp = np.append(tmp, n.neighbors)
+
+            # Condition output.
+            out = np.append(out, tmp)
             caused_by = np.append(caused_by, np.repeat(b, len(tmp)))
+
         return out, caused_by
            
     def direct_path_blocked(self):
@@ -71,12 +89,12 @@ class Path(object):
             if site in blocker0:
                 block_codes_and_sites.append([0, site])
 
-            # Block by nearest neighbor
+            # Block by nearest neighbor, if configured.
             for i, neighbors in enumerate(blocker1):
                 if site in neighbors:
                     block_codes_and_sites.append([1, blocker0[i]])
 
-            # Block by second-nearest neighbor
+            # Block by second-nearest neighbor, if configured.
             for i, second_neighbors in enumerate(blocker2):
                 if site in second_neighbors:
                     block_codes_and_sites.append([2, blocker0[i]])
@@ -84,7 +102,7 @@ class Path(object):
         return block_codes_and_sites
         
     def determine_direct_path(self):
-        self.sitelist_direct = list([self.start]) # No legality check for the starting point
+        self.sitelist_direct = list([self.start]) # No legality check for the starting point.
         
         if self.start == self.end:
             logging.info("  Info: Starting site and end site are equal.")
@@ -300,7 +318,7 @@ class Paths(object):
             self.members[-1].determine_path()
         logging.info("%d paths determined." % len(self.members))
     
-    def determine_paths_no_collision(self):
+    def determine_paths_no_collision(self, avoid_nearest_neighbors=True, avoid_second_nearest_neighbors=True):
         for k in range(len(self.atoms)):
         
             a_lb = np.delete(self.atoms, k) # list of (potential) blockers
