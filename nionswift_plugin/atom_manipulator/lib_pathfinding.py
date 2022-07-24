@@ -71,7 +71,7 @@ def find_paths(manipulator, auto_manipulate=False):
                 print(e)
                 return
             else:
-                manipulator.paths.determine_paths_no_collision()
+                manipulator.paths.determine_paths_no_collision(avoid_1nn=True, avoid_2nn=True)
             
             # Plot paths.
             while not manipulator.rdy_init_pdi.wait(1) or not manipulator.rdy_update_pdi.wait(1):

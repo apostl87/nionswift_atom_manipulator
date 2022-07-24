@@ -6,7 +6,7 @@ from scipy.optimize import linear_sum_assignment as lsa
 class Path(object):
     
     def __init__(self, site1, site2, a_id=0, list_blockers = [], list_banned = [], is_subpath=False,
-                avoid_nearest_neighbors=True, avoid_second_nearest_neighbors=True):
+                avoid_1nn=True, avoid_2nn=True):
         self.debug_print = False # Some lines with print commands are inserted for debugging
         
         self.start = site1
@@ -21,8 +21,8 @@ class Path(object):
         # flags
         self.is_subpath = is_subpath
         self.is_valid = None
-        self.avoid_1nn = avoid_nearest_neighbors
-        self.avoid_2nn = avoid_second_nearest_neighbors
+        self.avoid_1nn = avoid_1nn
+        self.avoid_2nn = avoid_2nn
         
     def print_sitelist(self):
         txt = "Current path is (site ids): "
@@ -315,10 +315,10 @@ class Paths(object):
             target = self.target_sites[k]
             source = self.atoms[k]
             self.members = np.append(self.members, Path(source.site, target))
-            self.members[-1].determine_path()
+            self.members[-1].determine_direct_path()
         logging.info("%d paths determined." % len(self.members))
     
-    def determine_paths_no_collision(self, avoid_nearest_neighbors=True, avoid_second_nearest_neighbors=True):
+    def determine_paths_no_collision(self, avoid_1nn=True, avoid_2nn=True):
         for k in range(len(self.atoms)):
         
             a_lb = np.delete(self.atoms, k) # list of (potential) blockers
@@ -329,7 +329,8 @@ class Paths(object):
                     print(atom.output_info())
                 print("===")
                 
-            path_to_be_evaluated = Path(self.atoms[k].site, self.target_sites[k], list_blockers = a_lb)
+            path_to_be_evaluated = Path(self.atoms[k].site, self.target_sites[k], list_blockers = a_lb,
+                                        avoid_1nn=avoid_1nn, avoid_2nn=avoid_2nn)
             
             ## New no collision algorithm
             path_to_be_evaluated.determine_direct_path()
@@ -371,7 +372,8 @@ class Paths(object):
 
                             site_idx = np.where(block_site == path_to_be_evaluated.sitelist_direct)[0][0]
 
-                            subpath = Path(block_atom.site, path_to_be_evaluated.sitelist_direct[-1], is_subpath=True)
+                            subpath = Path(block_atom.site, path_to_be_evaluated.sitelist_direct[-1], is_subpath=True,
+                                            avoid_1nn=avoid_1nn, avoid_2nn=avoid_2nn)
                             subpath.sitelist = path_to_be_evaluated.sitelist_direct[site_idx:]
 
                             # Move atom in backend.
@@ -393,12 +395,14 @@ class Paths(object):
                         else:
                             #print("indirect path block")
 
-                            subpath = Path(block_atom.site, path_to_be_evaluated.sitelist_direct[-1], is_subpath=True)
+                            subpath = Path(block_atom.site, path_to_be_evaluated.sitelist_direct[-1], is_subpath=True,
+                                            avoid_1nn=avoid_1nn, avoid_2nn=avoid_2nn)
                             subpath.determine_direct_path()
                             subpath.sitelist = subpath.sitelist_direct
                             N0 = len(subpath.sitelist)-1 
 
-                            path_proposed = Path(self.atoms[k].site, block_site, list_blockers=a_lb)
+                            path_proposed = Path(self.atoms[k].site, block_site, list_blockers=a_lb,
+                                                    avoid_1nn=avoid_1nn, avoid_2nn=avoid_2nn)
                             path_proposed.determine_direct_path()
                             path_proposed.sitelist = path_proposed.sitelist_direct
                             N1 = len(path_proposed.sitelist)-1
