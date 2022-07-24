@@ -10,7 +10,10 @@ from .lib_widgets import Section, line_edit_template, check_box_template, combo_
 _ = gettext.gettext
 
 # Defaults on initialization.
-defaults = {'max_bond_length': 1.8} # in Angstroem
+defaults = {'max_bond_length': 1.8, # in Angstroem
+            'avoid_1nn': True,      # Avoid nearest neighbors of foreign atoms.
+            'avoid_2nn': True       # Avoid second-nearest neighbors of foreign atoms.
+        }
 
 
 class PathFindingModule(AtomManipulatorModule):
@@ -19,6 +22,8 @@ class PathFindingModule(AtomManipulatorModule):
         super().__init__(ui, api, document_controller)
         self.manipulator = manipulator # AtomManipulatorDelegate object
         self.max_bond_length = None # Internally Nion Swift calculates in nm.
+        self.avoid_1nn = None
+        self.avoid_2nn = None
         
         # Events.
         self.rdy = threading.Event()
@@ -37,8 +42,17 @@ class PathFindingModule(AtomManipulatorModule):
             add_remove_atoms_sites(2)
         def remove_target_sites_clicked():
             add_remove_atoms_sites(3)
+        def find_paths_clicked():
+            lib_pathfinding.find_paths(self.manipulator)
+        def move_probe_clicked():
+            lib_pathfinding.move_probe(self.manipulator)
+        def avoid_1nn_changed(checked):
+            self.avoid_1nn = checked
+        def avoid_2nn_changed(checked):
+            self.avoid_2nn = checked
 
         #### GUI elements.
+
         ## Adding, removing, and displaying foreign atoms and target sites.
         # Toggle text of buttons.
         def toggle_button1_text(): # Foreign atoms
@@ -109,7 +123,16 @@ class PathFindingModule(AtomManipulatorModule):
         target_sites_row.add(self.remove_target_sites_button)
         target_sites_row.add_stretch()
         
-        # Other widget rows.
+        ## Avoid neighbors of foreign atoms.
+        avoid_neighbors_row, self.avoid_1nn_check_box = check_box_template(self.ui, _('Avoid 1NN'))
+        self.avoid_1nn_check_box.on_checked_changed = avoid_1nn_changed
+
+        self.avoid_2nn_check_box = self.ui.create_check_box_widget(_('Avoid 2NN'))
+        self.avoid_2nn_check_box.on_checked_changed = avoid_2nn_changed
+
+        avoid_neighbors_row.add(self.avoid_2nn_check_box)
+
+        ## Maximum bond length.
         max_bond_length_row, self.max_bond_length_line_edit = line_edit_template(self.ui, 'Max. bond length [A]')
         def max_bond_length_editing_finished(text):
             if len(text) > 0:
@@ -121,21 +144,25 @@ class PathFindingModule(AtomManipulatorModule):
                     self.max_bond_length_line_edit.text = f"{self.max_bond_length:.2f}"
         self.max_bond_length_line_edit.on_editing_finished = max_bond_length_editing_finished
         
+        ## Other buttons. 
         find_paths_row, self.find_paths_button = push_button_template(self.ui, 'Find paths')
-        def find_paths_clicked():
-            lib_pathfinding.find_paths(self.manipulator)
         self.find_paths_button.on_clicked = find_paths_clicked
+
         self.move_probe_button = self.ui.create_push_button_widget('Move probe') # to the next demanded position')
-        def move_probe_clicked():
-            lib_pathfinding.move_probe(self.manipulator)
         self.move_probe_button.on_clicked = move_probe_clicked
+
         find_paths_row.add(self.move_probe_button)
         
         # Set defaults.
         max_bond_length_editing_finished(str(defaults['max_bond_length']))
-        
+        self.avoid_1nn_check_box.checked = defaults['avoid_1nn']
+        avoid_1nn_changed(self.avoid_1nn_check_box.checked)
+        self.avoid_2nn_check_box.checked = defaults['avoid_2nn']
+        avoid_1nn_changed(self.avoid_2nn_check_box.checked)
+
         # Assemble GUI elements.
         self.section.column.add(foreign_atoms_row)
         self.section.column.add(target_sites_row)
         self.section.column.add(max_bond_length_row)
+        self.section.column.add(avoid_neighbors_row)
         self.section.column.add(find_paths_row)
