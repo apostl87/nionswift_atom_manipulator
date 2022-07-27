@@ -141,7 +141,7 @@ def analyze_and_show(structure_recognition_module, auto_manipulate=False, live_a
                         logging.info(lib_utils.log_message("Saved value for 'sampling' is None. Stopping..."))
                         return None # Stop manipulator.
 
-                # Call deep convolutional neural network (DCNN).
+                # Call fully convolutional neural network (FCNN).
                 t = time.time()
                 logging.info(lib_utils.log_message("Neural network called for structure recognition."))
                 
@@ -183,6 +183,8 @@ def analyze_and_show(structure_recognition_module, auto_manipulate=False, live_a
                     clear_user_defined_atoms_and_targets(manipulator)
                 
                 else: # Reposition foreign atoms, target sites and the corresponding graphics.
+                    t = time.time()
+
                     all_coords = np.full((len(manipulator.sites), 2), np.nan)
                     if len(manipulator.sources) > 0 or len(manipulator.targets) > 0:
                         for i, site in enumerate(manipulator.sites):
@@ -240,10 +242,11 @@ def analyze_and_show(structure_recognition_module, auto_manipulate=False, live_a
                 # Auto-detection of sources.
                 func_auto_detect_foreign_atoms(structure_recognition_module)
 
-                # Draw atom positions if checkbox is checked.
+                # Wait for ready_init_pdi event.
                 while not manipulator.rdy_init_pdi.wait(1):
-                        pass
+                    pass
                 
+                # Draw atom positions if checkbox is checked.
                 tmp_image = copy.copy(pdi.data)
                 if structure_recognition_module.visualize_atoms:
                     lib_utils.plot_points(tmp_image, manipulator.maxima_locations)
