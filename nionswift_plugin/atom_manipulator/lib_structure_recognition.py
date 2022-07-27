@@ -322,8 +322,9 @@ def func_auto_detect_foreign_atoms(structure_recognition_module):
             lib_utils.add_listener_graphic_changed(manipulator, rra[i])
             
     if len(new_centers) > 0:
-        for i, center in enumerate(new_centers):
-            rra[i].center = center
+        with manipulator.api.library.data_ref_for_data_item(pdi):
+            for i, center in enumerate(new_centers):
+                rra[i].center = center
         
     if len(rra) > number_foreigns: # Remove excess graphics.
         #print(" ! Removing excess RECTANGLE graphics ")
