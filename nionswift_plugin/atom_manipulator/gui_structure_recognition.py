@@ -19,7 +19,7 @@ _ = gettext.gettext
 
 # Defaults on initialization.
 defaults = {'visualize_atoms': True,
-            'auto_detect_foreign_atoms': False,
+            'auto_detect_foreign_atoms': True,
             'element_identification_integration_radius_A': 0.25, # in Angstroem
             'element_identification_exponent': 1.64,
             'image_source': 0,   # 0: MAADF, 1: HAADF, 2: Selected data item
