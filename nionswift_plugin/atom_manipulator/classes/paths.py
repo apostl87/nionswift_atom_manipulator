@@ -137,7 +137,7 @@ class Path(object):
             return None
 
         if self.debug_print:
-            print(self.start.neighbors) #DEBUG
+            print(self.start.neighbors)
 
         it = 0
         while (self.sitelist_direct[-1].id != self.end.id) and (it <= 1000):
@@ -397,7 +397,7 @@ class Paths(object):
                     N_steps_unblocked = len(path_to_be_evaluated.sitelist)-1
 
                     if N_steps_unblocked > len(path_to_be_evaluated.sitelist_direct)-1:
-                        print("unblocked path is longer")
+                        #print("unblocked path is longer")
 
                         block_code, block_site = block_codes_and_sites[-1]
                         block_atom_idx = np.where([block_site == x.site for x in self.atoms])[0][0]
@@ -408,7 +408,7 @@ class Paths(object):
                             # If the blocker is directly a foreign atom, the sum of the paths
                             # with interchanged target sites will always be equally long.
 
-                            print("direct path block")
+                            #print("direct path block")
 
                             site_idx = np.where([block_site == x for x in path_to_be_evaluated.sitelist_direct])[0][0]
 
@@ -433,7 +433,7 @@ class Paths(object):
                             block_codes_and_sites.remove(block_codes_and_sites[-1])
 
                         else:
-                            print("indirect path block")
+                            #print("indirect path block")
                             
                             ## EXPERIMENTAL, swapping paths ##
                             if block_path in self.members:
