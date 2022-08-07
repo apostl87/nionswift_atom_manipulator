@@ -10,7 +10,7 @@ from .lib_widgets import Section, line_edit_template, check_box_template, combo_
 _ = gettext.gettext
 
 # Defaults on initialization.
-defaults = {'max_bond_length': 1.8, # in Angstroem
+defaults = {'max_bond_length': 2.2, # in Angstroem
             'avoid_1nn': True,      # Avoid nearest neighbors of foreign atoms.
             'avoid_2nn': True       # Avoid second-nearest neighbors of foreign atoms.
         }

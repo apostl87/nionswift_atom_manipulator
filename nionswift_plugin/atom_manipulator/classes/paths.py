@@ -55,6 +55,25 @@ class Path(object):
                     out2.append(second_neighbors)
 
         return out0, out1, out2
+
+    def banned_sites(self):
+
+        out = []
+        # Banned sites directly.
+        for x in self.list_banned:
+            out.append(x)
+
+            # If nearest neighbors are also configured to block.
+            if self.avoid_1nn:
+                for n in x.neighbors:
+                    out.append(n)
+
+                    # If second-nearest neighbors are also configured to block.
+                    if self.avoid_2nn:
+                        for nn in n.neighbors:
+                            out.append(nn)
+
+        return out
             
     def blocked(self):
         out = np.array([])
@@ -78,7 +97,8 @@ class Path(object):
             caused_by = np.append(caused_by, np.repeat(b, len(tmp)))
 
         return out, caused_by
-           
+
+
     def direct_path_blocked_old(self):
         blocker0, blocker1, blocker2 = self.blocking_sites()
 
@@ -140,14 +160,25 @@ class Path(object):
             print(self.start.neighbors)
 
         it = 0
-        while (self.sitelist_direct[-1].id != self.end.id) and (it <= 1000):
-            it += 1
+
+        banned_sites_tmp = self.banned_sites()
+
+        while (self.sitelist_direct[-1].id != self.end.id) and (it <= 200):
+            it += 1 # Endless loop protection.
             d = np.infty
             highest_rated_neighbor = None
+
+            path_depth = len(self.sitelist_direct)-1
+            if path_depth == -1:
+                print(" No allowed direct path found")
+                self.is_valid = False
+                return None
+
             for candidate in self.sitelist_direct[-1].neighbors:
                 # Exclude any double occurence and forbid the banned sites.
 
-                if (candidate in self.sitelist_direct) or (candidate in self.list_banned):
+                #if (candidate in self.sitelist_direct) or (candidate in self.list_banned):
+                if (candidate in self.sitelist_direct) or (candidate in banned_sites_tmp):
                     continue
                 
                 # d_tilde ... Cost equivalent
@@ -163,9 +194,9 @@ class Path(object):
                     highest_rated_neighbor = candidate
 
             if not highest_rated_neighbor:
-                print("  Failure: No allowed neighbor found")
-                self.is_valid = False
-                return None
+                print(" Going back due to a banned site: No allowed neighbor found")
+                banned_sites_tmp.append(self.sitelist_direct[-1])
+                self.sitelist_direct.remove(self.sitelist_direct[-1])
 
             else:
                 self.sitelist_direct.append(highest_rated_neighbor)
@@ -189,7 +220,7 @@ class Path(object):
 
         it = 0
 
-        while (self.sitelist[-1].id != self.end.id) and (it <= 100):
+        while (self.sitelist[-1].id != self.end.id) and (it <= 200):
             it += 1 # Endless loop protection.
 
             path_depth = len(self.sitelist)-1 # Current path depth.
@@ -208,7 +239,7 @@ class Path(object):
 
                 for i, candidate in enumerate(self.sitelist[-1].neighbors):
 
-                    # Here, do not allow to go back.
+                    # Here, do not allow going back.
                     if (candidate in self.sitelist) or (candidate in self.list_banned):
                         continue
 
@@ -268,12 +299,16 @@ class Paths(object):
         for atom in atoms:
             atom.site = atom.origin # Reinit position of the atoms before a fresh calculation of the paths.
        
-        self.atoms = np.array(atoms)  # numpy.ndarray of class member "Atom".
+        # Exclude 4-coordinated atoms.
+        self.atoms = np.array([x for x in atoms if len(x.site.neighbors) != 4]) # numpy.ndarray of class member "Atom".
+        self.atoms_four_coordinated = np.array([x for x in atoms if len(x.site.neighbors) == 4])
+        #self.atoms_four_coordinated_appended = np.concatenate((self.atoms, self.atoms_four_coordinated_appended)) # including 4-coordinated atoms
 
+        # Track exchanged path pairs.
         self.swapped_pairs = []
         
         # First determine atom-target assignment.
-        self.atoms_ordered_idx, self.target_sites_ordered_idx, cost = self.hungarian_lap()
+        self.atoms_ordered_idx, self.target_sites_ordered_idx, cost = self.lap_hungarian()
         
         # Then sort the atom-target-pairs in ascending order w.r.t. distance.
         self.build_succession(cost)
@@ -295,7 +330,7 @@ class Paths(object):
             txt = site.output_info()
             print(txt)
         
-    def hungarian_lap(self):
+    def lap_hungarian(self):
         #  ----------- scipy.optimize.linear_sum_assignment ---------
         #  https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.linear_sum_assignment.html
         #
@@ -327,7 +362,6 @@ class Paths(object):
         M = len(self.atoms)
         N = len(self.target_sites)
 
-
         # Cost matrix
         C = np.zeros((M, N))
         for i in range(M):
@@ -358,15 +392,16 @@ class Paths(object):
             ## EXPERIMENTAL
             swapped_path = False
         
-            a_lb = np.delete(self.atoms, k) # List of (potential) blockers.
+            a_blocker_list = np.delete(self.atoms, k) # List of (potential) blockers.
+            a_banlist = [x.site for x in self.atoms_four_coordinated] # List of banned sites without neighbors being banned.
             
             if self.debug_print:
                 print("=== Potential blockers ===")
-                for atom in a_lb:
+                for atom in a_blocker_list:
                     print(atom.output_info())
                 print("===")
                 
-            path_to_be_evaluated = Path(self.atoms[k].site, self.target_sites[k], list_blockers = a_lb,
+            path_to_be_evaluated = Path(self.atoms[k].site, self.target_sites[k], list_blockers = a_blocker_list, list_banned = a_banlist,
                                         avoid_1nn=avoid_1nn, avoid_2nn=avoid_2nn)
             self.atoms[k].main_path = path_to_be_evaluated # ## EXPERIMENTAL
             
@@ -402,8 +437,7 @@ class Paths(object):
                         block_code, block_site = block_codes_and_sites[-1]
                         block_atom_idx = np.where([block_site == x.site for x in self.atoms])[0][0]
                         block_atom = self.atoms[block_atom_idx]
-                        block_path = block_atom.main_path # ## EXPERIMENTAL
-                        
+
                         if block_code == 0:
                             # If the blocker is directly a foreign atom, the sum of the paths
                             # with interchanged target sites will always be equally long.
@@ -437,6 +471,7 @@ class Paths(object):
                             
                             ## EXPERIMENTAL, swapping paths ##
                             if block_path in self.members:
+                                block_path = block_atom.main_path
                                 path_member_idx = np.where(block_path == np.array(self.members))[0][0]
 
                                 # Avoid swapping back and forth.
@@ -468,7 +503,7 @@ class Paths(object):
                             subpath.sitelist = subpath.sitelist_direct
                             N0 = len(subpath.sitelist)-1 
 
-                            path_proposed = Path(self.atoms[k].site, block_site, list_blockers=a_lb,
+                            path_proposed = Path(self.atoms[k].site, block_site, list_blockers=a_blocker_list,
                                                     avoid_1nn=avoid_1nn, avoid_2nn=avoid_2nn)
                             path_proposed.determine_direct_path()
                             path_proposed.sitelist = path_proposed.sitelist_direct
