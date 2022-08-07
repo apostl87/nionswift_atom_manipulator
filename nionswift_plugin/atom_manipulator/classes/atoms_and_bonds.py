@@ -67,14 +67,15 @@ class Site:
 
 class Atom(object):
     
-    def __init__(self, site, element, defined_by_user=False):
+    def __init__(self, site, element, defined_by_user=False, main_path=None):
         self.debug_print = False # Some lines with print commands are inserted for debugging
         
         self.site = site
         self.origin = site
         self.element = element
         self.defined_by_user = defined_by_user
-        
+        self.main_path = main_path # ##new
+
     def move(self, new_site):
         old_site = self.site
         self.site = new_site

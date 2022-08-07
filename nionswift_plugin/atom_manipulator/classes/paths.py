@@ -79,7 +79,7 @@ class Path(object):
 
         return out, caused_by
            
-    def direct_path_blocked(self):
+    def direct_path_blocked_old(self):
         blocker0, blocker1, blocker2 = self.blocking_sites()
 
         block_codes_and_sites = []
@@ -98,6 +98,30 @@ class Path(object):
             for i, second_neighbors in enumerate(blocker2):
                 if site in second_neighbors:
                     block_codes_and_sites.append([2, blocker0[i]])
+
+        return block_codes_and_sites
+
+    def direct_path_blocked(self):
+        blocker0, blocker1, blocker2 = self.blocking_sites()
+
+        block_codes_and_sites = []
+
+        for i, b0 in enumerate(blocker0):
+            if b0 in self.sitelist_direct:
+                block_codes_and_sites.append([0, b0])
+                continue
+            
+            neighbors = blocker1[i]
+            is_in_path = [b1 in self.sitelist_direct for b1 in neighbors]
+            if any(is_in_path):
+                block_codes_and_sites.append([1, b0])
+                continue
+
+            second_neighbors = blocker2[i]
+            is_in_path = [b2 in self.sitelist_direct for b2 in neighbors]
+            if any(is_in_path):
+                block_codes_and_sites.append([2, b0])
+                continue
 
         return block_codes_and_sites
         
@@ -331,6 +355,7 @@ class Paths(object):
                 
             path_to_be_evaluated = Path(self.atoms[k].site, self.target_sites[k], list_blockers = a_lb,
                                         avoid_1nn=avoid_1nn, avoid_2nn=avoid_2nn)
+            self.atoms[k].main_path = path_to_be_evaluated # ##new
             
             ## New no collision algorithm.
             path_to_be_evaluated.determine_direct_path()
@@ -363,14 +388,15 @@ class Paths(object):
                         block_code, block_site = block_codes_and_sites[-1]
                         block_atom_idx = np.where([block_site == x.site for x in self.atoms])[0][0]
                         block_atom = self.atoms[block_atom_idx]
+                        block_path = block_atom.main_path # ##new
 
                         if block_code == 0:
                             # If the blocker is directly a foreign atom, the sum of the paths
                             # with interchanged target sites will always be equally long.
 
-                            #print("direct path block")
+                            print("direct path block")
 
-                            site_idx = np.where(block_site == path_to_be_evaluated.sitelist_direct)[0][0]
+                            site_idx = np.where([block_site == x for x in path_to_be_evaluated.sitelist_direct])[0][0]
 
                             subpath = Path(block_atom.site, path_to_be_evaluated.sitelist_direct[-1], is_subpath=True,
                                             avoid_1nn=avoid_1nn, avoid_2nn=avoid_2nn)
@@ -393,7 +419,8 @@ class Paths(object):
                             block_codes_and_sites.remove(block_codes_and_sites[-1])
 
                         else:
-                            #print("indirect path block")
+                            print("indirect path block")
+                            
 
                             subpath = Path(block_atom.site, path_to_be_evaluated.sitelist_direct[-1], is_subpath=True,
                                             avoid_1nn=avoid_1nn, avoid_2nn=avoid_2nn)
