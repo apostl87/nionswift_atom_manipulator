@@ -262,11 +262,15 @@ class Paths(object):
     def __init__(self, atoms, target_sites):
         self.debug_print = False # Some lines with print commands are inserted for debugging.
         
-        self.members = np.array([])
+        self.members = np.array([]) # numpy.ndarray of class member "Path".
+
         self.target_sites = np.array(target_sites) # numpy.ndarray of class member "Site".
         for atom in atoms:
             atom.site = atom.origin # Reinit position of the atoms before a fresh calculation of the paths.
-        self.atoms = np.array(atoms)
+       
+        self.atoms = np.array(atoms)  # numpy.ndarray of class member "Atom".
+
+        self.swapped_pairs = []
         
         # First determine atom-target assignment.
         self.atoms_ordered_idx, self.target_sites_ordered_idx, cost = self.hungarian_lap()
@@ -348,7 +352,11 @@ class Paths(object):
         logging.info("%d paths determined." % len(self.members))
     
     def determine_paths_no_collision(self, avoid_1nn=True, avoid_2nn=True):
-        for k in range(len(self.atoms)):
+        k = 0
+        while k < len(self.atoms):
+
+            ## EXPERIMENTAL
+            swapped_path = False
         
             a_lb = np.delete(self.atoms, k) # List of (potential) blockers.
             
@@ -360,7 +368,7 @@ class Paths(object):
                 
             path_to_be_evaluated = Path(self.atoms[k].site, self.target_sites[k], list_blockers = a_lb,
                                         avoid_1nn=avoid_1nn, avoid_2nn=avoid_2nn)
-            self.atoms[k].main_path = path_to_be_evaluated # ##new
+            self.atoms[k].main_path = path_to_be_evaluated # ## EXPERIMENTAL
             
             ## New no collision algorithm.
             path_to_be_evaluated.determine_direct_path()
@@ -384,17 +392,18 @@ class Paths(object):
                     if not is_first_iteration:
                         path_to_be_evaluated.determine_unblocked_path()
                     else:
-                        recalculate_unblocked_path = True
+                        is_first_iteration = False
 
                     N_steps_unblocked = len(path_to_be_evaluated.sitelist)-1
 
                     if N_steps_unblocked > len(path_to_be_evaluated.sitelist_direct)-1:
+                        print("unblocked path is longer")
 
                         block_code, block_site = block_codes_and_sites[-1]
                         block_atom_idx = np.where([block_site == x.site for x in self.atoms])[0][0]
                         block_atom = self.atoms[block_atom_idx]
-                        block_path = block_atom.main_path # ##new
-
+                        block_path = block_atom.main_path # ## EXPERIMENTAL
+                        
                         if block_code == 0:
                             # If the blocker is directly a foreign atom, the sum of the paths
                             # with interchanged target sites will always be equally long.
@@ -419,14 +428,40 @@ class Paths(object):
 
                             # Prepare for next loop iteration.
                             path_to_be_evaluated.sitelist_direct = path_to_be_evaluated.sitelist_direct[:site_idx+1]
-                            path_to_be_evaluated.sitelist = path_to_be_evaluated.sitelist[:site_idx+1]
+                            path_to_be_evaluated.sitelist = path_to_be_evaluated.sitelist_direct
                             path_to_be_evaluated.end = path_to_be_evaluated.sitelist_direct[-1]
                             block_codes_and_sites.remove(block_codes_and_sites[-1])
 
                         else:
                             print("indirect path block")
                             
+                            ## EXPERIMENTAL, swapping paths ##
+                            if block_path in self.members:
+                                path_member_idx = np.where(block_path == np.array(self.members))[0][0]
 
+                                # Avoid swapping back and forth.
+                                swapped_pair = [self.atoms[k], self.atoms[block_atom_idx]]
+                                if swapped_pair in self.swapped_pairs or swapped_pair[-1::-1] in self.swapped_pairs:
+                                    pass
+                                
+                                else: # Here, the order of the paths is exchanged.
+                                    self.swapped_pairs.append(swapped_pair)
+
+                                    self.atoms[k], self.atoms[block_atom_idx] = self.atoms[block_atom_idx], self.atoms[k]
+                                    self.target_sites[k], self.target_sites[block_atom_idx] = self.target_sites[block_atom_idx], self.target_sites[k]
+                                
+                                    # Reset the position of atoms beginning at block_atom_idx.
+                                    for kk in range(block_atom_idx, len(self.atoms)):
+                                        self.atoms[kk].site = self.atoms[kk].origin
+                                    
+                                    # Delete all path members beginning at the path_member_idx of block_path and continue loop there.
+                                    self.members = self.members[:path_member_idx] # 
+                                    k = block_atom_idx
+                                    swapped_path = True
+                                    break
+                            ## EXPERIMENTAL END ##
+
+                            # Try exchanging target sites between blocking atom and currently evaluated atom.
                             subpath = Path(block_atom.site, path_to_be_evaluated.sitelist_direct[-1], is_subpath=True,
                                             avoid_1nn=avoid_1nn, avoid_2nn=avoid_2nn)
                             subpath.determine_direct_path()
@@ -463,6 +498,10 @@ class Paths(object):
                         if is_first_iteration:
                             N_steps_compound_path = np.nan # No compound path was calculated.
 
+                ## EXPERIMENTAL
+                if swapped_path: # Start a new loop iteration with the loop counter "k" reset to the original block_atom_idx. 
+                    continue
+
                 N_steps_compound_path += len(path_to_be_evaluated.sitelist)-1
 
                 if self.debug_print:
@@ -480,6 +519,9 @@ class Paths(object):
                 self.print_atoms_and_targets()
             self.members = np.append(self.members, path_to_be_evaluated)
             self.members[-1].print_sitelist()
+            
+            # Loop counter.
+            k += 1
         
         N = 0
         for path in self.members:
