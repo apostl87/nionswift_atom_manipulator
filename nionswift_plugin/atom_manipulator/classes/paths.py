@@ -7,7 +7,7 @@ class Path(object):
     
     def __init__(self, site1, site2, a_id=0, list_blockers = [], list_banned = [], is_subpath=False,
                 avoid_1nn=True, avoid_2nn=True):
-        self.debug_print = False # Some lines with print commands are inserted for debugging
+        self.debug_print = False # Some lines with print commands are inserted for debugging.
         
         self.start = site1
         self.end = site2
@@ -118,7 +118,7 @@ class Path(object):
             d = np.infty
             highest_rated_neighbor = None
             for candidate in self.sitelist_direct[-1].neighbors:
-                # Exclude any double occurence and forbid the banned sites
+                # Exclude any double occurence and forbid the banned sites.
 
                 if (candidate in self.sitelist_direct) or (candidate in self.list_banned):
                     continue
@@ -126,11 +126,11 @@ class Path(object):
                 # d_tilde ... Cost equivalent
                 d_tilde = candidate.distance(self.end)
 
-                # Downrate the path at an edge or through a two-coordinated atom (lattice defect?) by 10 percent
+                # Downrate the path at an edge or through a two-coordinated atom (lattice defect?) by 10 percent.
                 if len(candidate.neighbors) < 3:
                     d_tilde *= 1.1
 
-                # Refresh highest rated neighbor
+                # Refresh highest rated neighbor.
                 if d_tilde < d:
                     d = d_tilde
                     highest_rated_neighbor = candidate
@@ -146,10 +146,10 @@ class Path(object):
         self.is_valid = True
 
     def determine_unblocked_path(self):
-        self.sitelist = list([self.start]) # No legality check for the starting point
+        self.sitelist = list([self.start]) # No legality check for the starting point.
 
-        self.candidates_d_tilde = list() # List with cost equivalents (= d_tilde)
-        self.calculated_Flags = list() # Flags if calculations were already done
+        self.candidates_d_tilde = list() # List with cost equivalents (= d_tilde).
+        self.calculated_Flags = list() # Flags if calculations were already done.
 
         if self.start == self.end:
             logging.info("  Info: Starting site and end site are equal.")
@@ -157,14 +157,14 @@ class Path(object):
             return None
 
         if self.debug_print:
-            print(self.start.neighbors) #DEBUG
+            print(self.start.neighbors)
 
         it = 0
 
         while (self.sitelist[-1].id != self.end.id) and (it <= 100):
-            it += 1 # endless loop protection 
+            it += 1 # Endless loop protection.
 
-            path_depth = len(self.sitelist)-1 # current path depth
+            path_depth = len(self.sitelist)-1 # Current path depth.
             if path_depth == -1:
                 print(" No allowed unblocked path")
                 self.is_valid = False
@@ -180,17 +180,17 @@ class Path(object):
 
                 for i, candidate in enumerate(self.sitelist[-1].neighbors):
 
-                # Do not allow to go back
+                    # Here, do not allow to go back.
                     if (candidate in self.sitelist) or (candidate in self.list_banned):
                         continue
 
                     blocking_sites_tmp, caused_by = self.blocked()
 
-                    # Do not allow approaches to a blocked position, except if end is a blocking site
+                    # Do not allow approaches to a blocked position, except if end is a blocking site.
                     if candidate in blocking_sites_tmp:
                         
                         idx = np.nonzero(self.end==blocking_sites_tmp)
-                        if len(idx[0]) > 0: # Here, self.end is in blocking_sites_tmp
+                        if len(idx[0]) > 0: # Here, self.end is in blocking_sites_tmp.
                             remaining_distance = candidate.distance(self.end)
                             if remaining_distance < candidate.distance(caused_by[idx][0].site)*0.9:
                                 pass
@@ -202,13 +202,13 @@ class Path(object):
                 # d_tilde ... Cost equivalent
                     self.candidates_d_tilde[path_depth][i] = candidate.distance(self.end)
 
-                # Downrate the path at an edge or through a two-coordinated atom (lattice defect?) by 10 percent
+                # Downrate the path at an edge or through a two-coordinated atom (lattice defect?) by 10 percent.
                     if len(candidate.neighbors) < 3:
                         self.candidates_d_tilde[path_depth][i] *= 1.1
 
                 self.calculated_Flags[path_depth] = True
 
-            # Refresh highest rated candidate
+            # Refresh highest rated candidate.
             d_min = np.min(self.candidates_d_tilde[path_depth])
             if d_min < np.infty:
                 highest_rated_candidate = self.sitelist[-1].neighbors[np.argmin(self.candidates_d_tilde[path_depth])]
@@ -220,9 +220,9 @@ class Path(object):
             else:
                 highest_rated_candidate = None
                 print("  Going back: No allowed neighbor found")
-                # Cost equivalents from previous candidates
+                # Cost equivalents from previous candidates.
                 d_tilde_parent = self.candidates_d_tilde[path_depth-1]
-                # Do not allow the highest rated previous candidate any more
+                # Do not allow the highest rated previous candidate any more.
                 self.candidates_d_tilde[path_depth-1][np.argmin(d_tilde_parent)] = np.infty
                 self.sitelist.remove(self.sitelist[-1])
 
@@ -231,18 +231,18 @@ class Path(object):
 class Paths(object):
     
     def __init__(self, atoms, target_sites):
-        self.debug_print = False # Some lines witch print commands are inserted for debugging
+        self.debug_print = False # Some lines with print commands are inserted for debugging.
         
         self.members = np.array([])
-        self.target_sites = np.array(target_sites) # numpy array of class member "Site"
+        self.target_sites = np.array(target_sites) # numpy.ndarray of class member "Site".
         for atom in atoms:
-            atom.site = atom.origin # reinit position of the atoms when calculating paths freshly
+            atom.site = atom.origin # Reinit position of the atoms before a fresh calculation of the paths.
         self.atoms = np.array(atoms)
         
-        # First determine atom-target assignment
+        # First determine atom-target assignment.
         self.atoms_ordered_idx, self.target_sites_ordered_idx, cost = self.hungarian_lap()
         
-        # Then sort the atom-target-pairs in ascending order w.r.t. distance
+        # Then sort the atom-target-pairs in ascending order w.r.t. distance.
         self.build_succession(cost)
         self.atoms = self.atoms[self.atoms_ordered_idx]
         self.target_sites = self.target_sites[self.target_sites_ordered_idx]
@@ -305,7 +305,7 @@ class Paths(object):
         return np.array(row_ind, dtype=int), np.array(col_ind, dtype=int), C[row_ind, col_ind]
         
     def build_succession(self, cost):
-        cost_ordered_idx = np.argsort(cost) # indices sorted by cost
+        cost_ordered_idx = np.argsort(cost) # Indices sorted by cost.
         self.atoms_ordered_idx = self.atoms_ordered_idx[cost_ordered_idx]
         self.target_sites_ordered_idx = self.target_sites_ordered_idx[cost_ordered_idx]
         return True
@@ -321,7 +321,7 @@ class Paths(object):
     def determine_paths_no_collision(self, avoid_1nn=True, avoid_2nn=True):
         for k in range(len(self.atoms)):
         
-            a_lb = np.delete(self.atoms, k) # list of (potential) blockers
+            a_lb = np.delete(self.atoms, k) # List of (potential) blockers.
             
             if self.debug_print:
                 print("=== Potential blockers ===")
@@ -332,7 +332,7 @@ class Paths(object):
             path_to_be_evaluated = Path(self.atoms[k].site, self.target_sites[k], list_blockers = a_lb,
                                         avoid_1nn=avoid_1nn, avoid_2nn=avoid_2nn)
             
-            ## New no collision algorithm
+            ## New no collision algorithm.
             path_to_be_evaluated.determine_direct_path()
             N_steps_direct = len(path_to_be_evaluated.sitelist_direct)-1
             block_codes_and_sites = path_to_be_evaluated.direct_path_blocked()
@@ -407,10 +407,10 @@ class Paths(object):
                             path_proposed.sitelist = path_proposed.sitelist_direct
                             N1 = len(path_proposed.sitelist)-1
 
-                            if N_steps_unblocked <= (N0+N1): # Here, unblocked path is smaller or equal than compound path
+                            if N_steps_unblocked <= (N0+N1): # Here, unblocked path is smaller or equal than the compound path.
                                 block_codes_and_sites = []
 
-                            else: # compound path will be picked here
+                            else: # Here, compound path will be picked.
 
                                 # Move atom in backend. 
                                 block_atom.move(subpath.sitelist[-1])
@@ -422,14 +422,14 @@ class Paths(object):
                                 self.members[-1].print_sitelist()
                                 N_steps_compound_path += N0
 
-                                # prepare for next loop iteration
+                                # Prepare for next loop iteration.
                                 path_to_be_evaluated = path_proposed
                                 block_codes_and_sites = path_proposed.direct_path_blocked()
 
-                    else: # Here, the unblocked path is equally long
+                    else: # Here, the unblocked path is equally long.
                         block_codes_and_sites = []
                         if is_first_iteration:
-                            N_steps_compound_path = np.nan # No compound path was calculated
+                            N_steps_compound_path = np.nan # No compound path was calculated.
 
                 N_steps_compound_path += len(path_to_be_evaluated.sitelist)-1
 
@@ -443,7 +443,7 @@ class Paths(object):
             # Move atom in backend.
             self.atoms[k].move(path_to_be_evaluated.sitelist[-1])
 
-            # Add subpath to path members.
+            # Add path to path members.
             if self.debug_print:
                 self.print_atoms_and_targets()
             self.members = np.append(self.members, path_to_be_evaluated)
