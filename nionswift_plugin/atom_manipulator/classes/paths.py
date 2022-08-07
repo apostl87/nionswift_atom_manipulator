@@ -85,16 +85,16 @@ class Path(object):
         block_codes_and_sites = []
 
         for site in self.sitelist_direct:
-            # Direct site block
+
             if site in blocker0:
                 block_codes_and_sites.append([0, site])
 
-            # Block by nearest neighbor, if configured.
+
             for i, neighbors in enumerate(blocker1):
                 if site in neighbors:
                     block_codes_and_sites.append([1, blocker0[i]])
 
-            # Block by second-nearest neighbor, if configured.
+
             for i, second_neighbors in enumerate(blocker2):
                 if site in second_neighbors:
                     block_codes_and_sites.append([2, blocker0[i]])
@@ -107,18 +107,21 @@ class Path(object):
         block_codes_and_sites = []
 
         for i, b0 in enumerate(blocker0):
+            # Direct site block.
             if b0 in self.sitelist_direct:
                 block_codes_and_sites.append([0, b0])
                 continue
             
+            # Block by nearest neighbor, if configured.
             neighbors = blocker1[i]
             is_in_path = [b1 in self.sitelist_direct for b1 in neighbors]
             if any(is_in_path):
                 block_codes_and_sites.append([1, b0])
                 continue
 
+            # Block by second-nearest neighbor, if configured.
             second_neighbors = blocker2[i]
-            is_in_path = [b2 in self.sitelist_direct for b2 in neighbors]
+            is_in_path = [b2 in self.sitelist_direct for b2 in second_neighbors]
             if any(is_in_path):
                 block_codes_and_sites.append([2, b0])
                 continue
@@ -170,6 +173,7 @@ class Path(object):
         self.is_valid = True
 
     def determine_unblocked_path(self):
+
         self.sitelist = list([self.start]) # No legality check for the starting point.
 
         self.candidates_d_tilde = list() # List with cost equivalents (= d_tilde).
@@ -214,6 +218,7 @@ class Path(object):
                     if candidate in blocking_sites_tmp:
                         
                         idx = np.nonzero(self.end==blocking_sites_tmp)
+
                         if len(idx[0]) > 0: # Here, self.end is in blocking_sites_tmp.
                             remaining_distance = candidate.distance(self.end)
                             if remaining_distance < candidate.distance(caused_by[idx][0].site)*0.9:

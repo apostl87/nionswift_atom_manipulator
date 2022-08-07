@@ -255,7 +255,8 @@ def element_identification(manipulator):
 
     def func():
         for label, graphic in zip(labels, graphics):
-            graphic.label = label
+            #graphic.label = label ## display of Z disabled
+            pass
     manipulator.api.queue_task(func)
 
 # Helper function for element identification
