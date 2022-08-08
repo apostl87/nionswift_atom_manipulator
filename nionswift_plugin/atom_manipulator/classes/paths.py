@@ -442,7 +442,7 @@ class Paths(object):
                             # If the blocker is directly a foreign atom, the sum of the paths
                             # with interchanged target sites will always be equally long.
 
-                            #print("direct path block")
+                            print("direct block")
 
                             site_idx = np.where([block_site == x for x in path_to_be_evaluated.sitelist_direct])[0][0]
 
@@ -453,9 +453,10 @@ class Paths(object):
                             # Move atom in backend.
                             block_atom.move(subpath.sitelist[-1])
                             
-                            # Add subpath to path members.
                             if self.debug_print:
                                 self.print_atoms_and_targets()
+
+                            # Add subpath to path members.
                             self.members = np.append(self.members, subpath)
                             self.members[-1].print_sitelist()
                             N_steps_compound_path += len(subpath.sitelist)-1 
@@ -467,11 +468,13 @@ class Paths(object):
                             block_codes_and_sites.remove(block_codes_and_sites[-1])
 
                         else:
-                            #print("indirect path block")
+                            print("indirect block")
                             
                             ## EXPERIMENTAL, swapping paths ##
+                            block_path = block_atom.main_path
+                            
                             if block_path in self.members:
-                                block_path = block_atom.main_path
+                                
                                 path_member_idx = np.where(block_path == np.array(self.members))[0][0]
 
                                 # Avoid swapping back and forth.
