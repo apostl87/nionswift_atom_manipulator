@@ -26,11 +26,13 @@ class Path(object):
         self.avoid_1nn = avoid_1nn
         self.avoid_2nn = avoid_2nn
         
-    def print_sitelist(self):
-        txt = "Current path is (site ids): "
+    def print_sitelist(self, prepend_text=None):
+        if prepend_text is None:
+            prepend_text = "Last calculated path is"
+        txt = prepend_text + " (site ids): "
         for site in self.sitelist:
             txt += str(site.id)+" "
-        print(txt)
+        logging.info(txt)
 
     def ban_site(self, site):
         self.list_banned.append(site)
@@ -650,7 +652,20 @@ class Paths(object):
             # Loop counter.
             k += 1
         
+
+        # Print number of valid paths.
         N = 0
         for path in self.members:
-            if not path.is_subpath and path.is_valid: N+=1
-        logging.info("%d valid paths determined." % N)
+            if not path.is_subpath and path.is_valid:
+                N += 1
+        logging.info("%d valid paths determined:" % N)
+
+        # Print all paths
+        i = 0
+        for path in self.members:
+            if not path.is_subpath:
+                i += 1
+                prepend_text = "Path " + f"{i}"
+            else:
+                prepend_text = "Reassignment"
+            path.print_sitelist(prepend_text=prepend_text)
