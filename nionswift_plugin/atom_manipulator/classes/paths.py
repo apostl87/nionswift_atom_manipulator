@@ -1,3 +1,5 @@
+########   CODE OVERHAUL NEEDED.   ########
+
 import numpy as np
 import logging
 import copy
@@ -433,16 +435,17 @@ class Paths(object):
                 print(f"Block codes {block_codes_and_sites}")
 
             if block_codes_and_sites: # Direct path is blocked.
-                print(block_codes_and_sites)
+                
+                #print(block_codes_and_sites) # DEBUG
                 
                 path_to_be_evaluated.determine_unblocked_path()
-                N_steps_unblocked_tot = len(path_to_be_evaluated.sitelist)-1
+                N_steps_unblocked_tot = len(path_to_be_evaluated.sitelist)-1 # Only for debugging.
 
                 N_steps_compound_path = 0
                 is_first_iteration = True
 
                 it = 0
-                while block_codes_and_sites and it <=50 : # Iterate for as long as a collision is identified.
+                while block_codes_and_sites and (it <= 50): # Iterate for as long as a collision is identified.
                     it += 1
 
                     if not is_first_iteration:
@@ -465,28 +468,28 @@ class Paths(object):
                             # If the blocker is directly a foreign atom, the sum of the paths
                             # with interchanged target sites will always be equally long.
 
-                            print("direct block")
+                            # print("direct block") # DEBUG
 
-                            site_idx = np.where([block_site == x for x in path_to_be_evaluated.sitelist_direct])[0][0]
+                            #site_idx = np.where([block_site == x for x in path_to_be_evaluated.sitelist_direct])[0][0] ## Became obsolete.
 
                             target_of_block_atom = self.target_sites[block_atom_idx]
-                            target_blocked = target_of_block_atom in path_to_be_evaluated.sitelist_direct \
+                            target_is_blocking = target_of_block_atom in path_to_be_evaluated.sitelist_direct \
                                 or any([x in path_to_be_evaluated.sitelist_direct for x in target_of_block_atom.neighbors]) \
                                 or any([x in path_to_be_evaluated.sitelist_direct for x in target_of_block_atom.second_nearest_neighbors()])
                             
-                            if target_blocked: # Here, target sites are exchanged. 
+                            if target_is_blocking: # Here, target sites are exchanged. 
                                 self.target_sites[k], self.target_sites[block_atom_idx] = self.target_sites[block_atom_idx], self.target_sites[k]
 
-                            subpath = Path(block_atom.site, self.target_sites[block_atom_idx], is_subpath=True,
+                            if self.debug_print:
+                                self.print_atoms_and_targets()
+
+                            subpath = Path(block_atom.site, self.target_sites[block_atom_idx], is_subpath=True, list_banned=a_banlist,
                                             avoid_1nn=avoid_1nn, avoid_2nn=avoid_2nn)
                             subpath.determine_direct_path()
                             subpath.sitelist = subpath.sitelist_direct
 
                             # Move atom in backend.
                             block_atom.move(subpath.sitelist[-1])
-                            
-                            if self.debug_print:
-                                self.print_atoms_and_targets()
 
                             # Add subpath to path members.
                             self.members = np.append(self.members, subpath)
@@ -496,6 +499,7 @@ class Paths(object):
                             # Prepare for next loop iteration.
                             path_to_be_evaluated = Path(self.atoms[k].site, self.target_sites[k], list_blockers=a_blocker_list, list_banned=a_banlist,
                                                         avoid_1nn=avoid_1nn, avoid_2nn=avoid_2nn)
+
                             path_to_be_evaluated.determine_direct_path()
                             path_to_be_evaluated.sitelist = path_to_be_evaluated.sitelist_direct
                             self.atoms[k].main_path = path_to_be_evaluated # ## EXPERIMENTAL
@@ -507,64 +511,107 @@ class Paths(object):
                             #block_codes_and_sites.remove(block_codes_and_sites[-1])
 
                         else:
-                            print("indirect block")
+
+                            #print("indirect block") # DEBUG
                             
-                            ## EXPERIMENTAL, swapping paths ##
+                            ## EXPERIMENTAL, moving back a path that has already been dealt with ##
                             
                             if block_path in self.members:
                                 
-                                path_member_idx = np.where(block_path == np.array(self.members))[0][0]
+                                #path_member_idx = np.where(block_path == np.array(self.members))[0][0] ## Became obsolete.
 
                                 # Avoid swapping back and forth.
                                 swapped_pair = [self.atoms[k], self.atoms[block_atom_idx]]
                                 if swapped_pair in self.swapped_pairs or swapped_pair[-1::-1] in self.swapped_pairs:
                                     pass
                                 
-                                else: # Here, the order of the paths is exchanged.
-                                    print("swapping paths")
+                                else: # Here, a path dealt with before is moved back.
+                                    
+                                    #print("swapping paths") # DEBUG
+                                    
                                     self.swapped_pairs.append(swapped_pair)
 
-                                    self.atoms[k], self.atoms[block_atom_idx] = self.atoms[block_atom_idx], self.atoms[k]
-                                    self.target_sites[k], self.target_sites[block_atom_idx] = self.target_sites[block_atom_idx], self.target_sites[k]
+                                    self.atoms = np.delete(self.atoms, block_atom_idx)
+                                    self.atoms = np.insert(self.atoms, k, block_atom)
+
+                                    self.target_sites = np.delete(self.target_sites, block_atom_idx)
+                                    self.target_sites = np.insert(self.target_sites, k, block_site)
+
+                                    # Reinit atom position.
+                                    for atom in self.atoms:
+                                        atom.move(atom.origin)
+
+                                    # Reinit paths.
+                                    self.members = np.array([]) 
+
+                                    # Start next loop iteration with k = 0 to avoid possible conflicts.
+                                    k = 0                               
+                                    swapped_path = True # To continue the primary while-loop with a new iteration.
+                                    
+                                    # Stop the secondary while-loop.
+                                    break 
+
+                                    ## Exchange paths (former solution)
+                                    #self.atoms[k], self.atoms[block_atom_idx] = self.atoms[block_atom_idx], self.atoms[k]
+                                    #self.target_sites[k], self.target_sites[block_atom_idx] = self.target_sites[block_atom_idx], self.target_sites[k]
                                 
                                     # Reset the position of atoms beginning at block_atom_idx.
-                                    for kk in range(block_atom_idx, len(self.atoms)):
-                                        self.atoms[kk].site = self.atoms[kk].origin
+                                    #for kk in range(block_atom_idx, len(self.atoms)):
+                                    #    self.atoms[kk].site = self.atoms[kk].origin
                                     
                                     # Delete all path members beginning at the path_member_idx of block_path and continue loop there.
-                                    self.members = self.members[:path_member_idx] # 
-                                    k = block_atom_idx
-                                    swapped_path = True
-                                    break
+                                    #self.members = self.members[:path_member_idx] # 
+                                    #k = block_atom_idx # new k for next loop iteration
+                                    #swapped_path = True
+                                    
+                                    #break
+
                             ## EXPERIMENTAL END ##
 
                             # Try exchanging target sites between blocking atom and currently evaluated atom.
-                            subpath = Path(block_atom.site, self.target_sites[k], is_subpath=True,
+                            target_of_block_atom = self.target_sites[block_atom_idx]
+
+                            target_is_blocking = target_of_block_atom in path_to_be_evaluated.sitelist_direct \
+                                or any([x in path_to_be_evaluated.sitelist_direct for x in target_of_block_atom.neighbors]) \
+                                or any([x in path_to_be_evaluated.sitelist_direct for x in target_of_block_atom.second_nearest_neighbors()])
+     
+                            if target_is_blocking: # Here, target sites would be exchanged exchanged.
+                                subpath_target_site, proposed_target_site = self.target_sites[k], self.target_sites[block_atom_idx]
+                            else:
+                                subpath_target_site, proposed_target_site = self.target_sites[block_atom_idx], self.target_sites[k]
+
+                            subpath = Path(block_atom.site, subpath_target_site, is_subpath=True, list_banned=a_banlist,
                                             avoid_1nn=avoid_1nn, avoid_2nn=avoid_2nn)
                             subpath.determine_direct_path()
                             subpath.sitelist = subpath.sitelist_direct
                             N0 = len(subpath.sitelist)-1 
 
-                            path_proposed = Path(self.atoms[k].site, self.target_sites[block_atom_idx], list_blockers=a_blocker_list, list_banned=a_banlist,
+                            path_proposed = Path(self.atoms[k].site, proposed_target_site, list_blockers=np.delete(self.atoms, [k, block_atom_idx]), list_banned=a_banlist,
                                                     avoid_1nn=avoid_1nn, avoid_2nn=avoid_2nn)
                             path_proposed.determine_direct_path()
                             path_proposed.sitelist = path_proposed.sitelist_direct
                             N1 = len(path_proposed.sitelist)-1
 
-                            if N_steps_unblocked <= (N0+N1): # Here, unblocked path is smaller or equal than the compound path.
+                            # The length of the planned path for block_atom is calculated for comparison.
+                            planned_block_path = Path(block_atom.site, self.target_sites[block_atom_idx], list_banned=a_banlist,
+                                            avoid_1nn=avoid_1nn, avoid_2nn=avoid_2nn)
+                            planned_block_path.determine_direct_path()
+                            N_planned = len(planned_block_path.sitelist_direct)-1
+
+                            if (N_steps_unblocked+N_planned) <= (N0+N1): # Here, unblocked path is smaller or equal than the compound path.
                                 block_codes_and_sites = []
 
-                            else: # Here, compound path will be picked.
+                            else: # Here, compound path with exchanged target sites will be picked.
+
+                                self.target_sites[k], self.target_sites[block_atom_idx] = proposed_target_site, subpath_target_site
 
                                 # Move atom in backend. 
                                 block_atom.move(subpath.sitelist[-1])
-
-                                # Set new main path.
-                                block_atom.main_path = path_proposed
                                 
-                                # Add subpath to path members.
                                 if self.debug_print:
                                     self.print_atoms_and_targets()
+
+                                # Add subpath to path members.
                                 self.members = np.append(self.members, subpath)
                                 self.members[-1].print_sitelist()
                                 N_steps_compound_path += N0
@@ -579,7 +626,7 @@ class Paths(object):
                             N_steps_compound_path = np.nan # No compound path was calculated.
 
                 ## EXPERIMENTAL
-                if swapped_path: # Start a new loop iteration with the loop counter "k" reset to the original block_atom_idx. 
+                if swapped_path: # Start a new iteration of the primary while-loop with the loop counter "k". 
                     continue
 
                 N_steps_compound_path += len(path_to_be_evaluated.sitelist)-1
