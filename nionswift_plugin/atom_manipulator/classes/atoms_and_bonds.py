@@ -16,6 +16,16 @@ class Site:
     def distance(self, site):
         x = self.coords - site.coords
         return np.sqrt(x[0]**2 + x[1]**2)
+
+    def second_nearest_neighbors(self):
+        out = []
+
+        for n in self.neighbors:
+            for nn in n.neighbors:
+                if nn is not self:
+                    out.append(nn)
+        
+        return out
     
     def add_candidate(self, site2):
         if self == site2:

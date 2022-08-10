@@ -125,35 +125,53 @@ class Path(object):
         blocker0, blocker1, blocker2 = self.blocking_sites()
 
         block_codes_and_sites = []
+        positions = []
 
         for i, b0 in enumerate(blocker0):
             # Direct site block.
-            if b0 in self.sitelist_direct:
+            sitelist_idx = np.nonzero([b0==x for x in self.sitelist_direct])[0]
+            if len(sitelist_idx)>0:
+                positions.append(sitelist_idx[-1])
                 block_codes_and_sites.append([0, b0])
                 continue
             
             # Block by nearest neighbor, if configured.
             neighbors = blocker1[i]
-            is_in_path = [b1 in self.sitelist_direct for b1 in neighbors]
+            is_in_path = [n in self.sitelist_direct for n in neighbors]
+            
             if any(is_in_path):
+                n_idx = np.nonzero(is_in_path)[0][0]
+                sitelist_idx = np.nonzero([neighbors[n_idx]==x for x in self.sitelist_direct])[0]
+                positions.append(sitelist_idx[-1])
                 block_codes_and_sites.append([1, b0])
                 continue
 
             # Block by second-nearest neighbor, if configured.
             second_neighbors = blocker2[i]
-            is_in_path = [b2 in self.sitelist_direct for b2 in second_neighbors]
+            is_in_path = [n2 in self.sitelist_direct for n2 in second_neighbors]
+
             if any(is_in_path):
+                n2_idx = np.nonzero(is_in_path)[0][0]
+                sitelist_idx = np.nonzero([second_neighbors[n2_idx]==x for x in self.sitelist_direct])[0]
+                positions.append(sitelist_idx[-1])
                 block_codes_and_sites.append([2, b0])
                 continue
 
-        return block_codes_and_sites
-        
+        out_sorted = []
+
+        order = np.argsort(positions) 
+        for o in order:
+            out_sorted.append(block_codes_and_sites[o])
+
+        #return block_codes_and_sites
+        return out_sorted
+
     def determine_direct_path(self):
         self.sitelist_direct = list([self.start]) # No legality check for the starting point.
         
         if self.start == self.end:
             logging.info("  Info: Starting site and end site are equal.")
-            self.is_valid = False
+            self.is_valid = True
             return None
 
         if self.debug_print:
@@ -167,12 +185,6 @@ class Path(object):
             it += 1 # Endless loop protection.
             d = np.infty
             highest_rated_neighbor = None
-
-            path_depth = len(self.sitelist_direct)-1
-            if path_depth == -1:
-                print(" No allowed direct path found")
-                self.is_valid = False
-                return None
 
             for candidate in self.sitelist_direct[-1].neighbors:
                 # Exclude any double occurence and forbid the banned sites.
@@ -200,6 +212,11 @@ class Path(object):
 
             else:
                 self.sitelist_direct.append(highest_rated_neighbor)
+            
+            if len(self.sitelist_direct) == 0:
+                print(" No allowed unblocked path")
+                self.is_valid = False
+                return None
 
         self.is_valid = True
 
@@ -212,7 +229,7 @@ class Path(object):
 
         if self.start == self.end:
             logging.info("  Info: Starting site and end site are equal.")
-            self.is_valid = False
+            self.is_valid = True
             return None
 
         if self.debug_print:
@@ -224,10 +241,6 @@ class Path(object):
             it += 1 # Endless loop protection.
 
             path_depth = len(self.sitelist)-1 # Current path depth.
-            if path_depth == -1:
-                print(" No allowed unblocked path")
-                self.is_valid = False
-                return None
 
             if len(self.calculated_Flags) <= path_depth:
                 self.calculated_Flags.append(False)
@@ -285,6 +298,11 @@ class Path(object):
                 # Do not allow the highest rated previous candidate any more.
                 self.candidates_d_tilde[path_depth-1][np.argmin(d_tilde_parent)] = np.infty
                 self.sitelist.remove(self.sitelist[-1])
+
+            if len(self.sitelist) == 0:
+                print(" No allowed unblocked path")
+                self.is_valid = False
+                return None
 
         self.is_valid = True
     
@@ -415,28 +433,33 @@ class Paths(object):
                 print(f"Block codes {block_codes_and_sites}")
 
             if block_codes_and_sites: # Direct path is blocked.
-
+                print(block_codes_and_sites)
+                
                 path_to_be_evaluated.determine_unblocked_path()
                 N_steps_unblocked_tot = len(path_to_be_evaluated.sitelist)-1
 
                 N_steps_compound_path = 0
                 is_first_iteration = True
 
-                while block_codes_and_sites: # Iterate for as long as a collision is identified.
+                it = 0
+                while block_codes_and_sites and it <=50 : # Iterate for as long as a collision is identified.
+                    it += 1
 
                     if not is_first_iteration:
                         path_to_be_evaluated.determine_unblocked_path()
                     else:
                         is_first_iteration = False
 
+                    N_steps_direct = len(path_to_be_evaluated.sitelist_direct)-1
                     N_steps_unblocked = len(path_to_be_evaluated.sitelist)-1
 
-                    if N_steps_unblocked > len(path_to_be_evaluated.sitelist_direct)-1:
+                    if N_steps_unblocked > N_steps_direct:
                         #print("unblocked path is longer")
 
                         block_code, block_site = block_codes_and_sites[-1]
                         block_atom_idx = np.where([block_site == x.site for x in self.atoms])[0][0]
                         block_atom = self.atoms[block_atom_idx]
+                        block_path = block_atom.main_path ## EXPERIMENTAL
 
                         if block_code == 0:
                             # If the blocker is directly a foreign atom, the sum of the paths
@@ -446,9 +469,18 @@ class Paths(object):
 
                             site_idx = np.where([block_site == x for x in path_to_be_evaluated.sitelist_direct])[0][0]
 
-                            subpath = Path(block_atom.site, path_to_be_evaluated.sitelist_direct[-1], is_subpath=True,
+                            target_of_block_atom = self.target_sites[block_atom_idx]
+                            target_blocked = target_of_block_atom in path_to_be_evaluated.sitelist_direct \
+                                or any([x in path_to_be_evaluated.sitelist_direct for x in target_of_block_atom.neighbors]) \
+                                or any([x in path_to_be_evaluated.sitelist_direct for x in target_of_block_atom.second_nearest_neighbors()])
+                            
+                            if target_blocked: # Here, target sites are exchanged. 
+                                self.target_sites[k], self.target_sites[block_atom_idx] = self.target_sites[block_atom_idx], self.target_sites[k]
+
+                            subpath = Path(block_atom.site, self.target_sites[block_atom_idx], is_subpath=True,
                                             avoid_1nn=avoid_1nn, avoid_2nn=avoid_2nn)
-                            subpath.sitelist = path_to_be_evaluated.sitelist_direct[site_idx:]
+                            subpath.determine_direct_path()
+                            subpath.sitelist = subpath.sitelist_direct
 
                             # Move atom in backend.
                             block_atom.move(subpath.sitelist[-1])
@@ -462,16 +494,22 @@ class Paths(object):
                             N_steps_compound_path += len(subpath.sitelist)-1 
 
                             # Prepare for next loop iteration.
-                            path_to_be_evaluated.sitelist_direct = path_to_be_evaluated.sitelist_direct[:site_idx+1]
+                            path_to_be_evaluated = Path(self.atoms[k].site, self.target_sites[k], list_blockers=a_blocker_list, list_banned=a_banlist,
+                                                        avoid_1nn=avoid_1nn, avoid_2nn=avoid_2nn)
+                            path_to_be_evaluated.determine_direct_path()
                             path_to_be_evaluated.sitelist = path_to_be_evaluated.sitelist_direct
-                            path_to_be_evaluated.end = path_to_be_evaluated.sitelist_direct[-1]
-                            block_codes_and_sites.remove(block_codes_and_sites[-1])
+                            self.atoms[k].main_path = path_to_be_evaluated # ## EXPERIMENTAL
+                            block_codes_and_sites = path_to_be_evaluated.direct_path_blocked()
+                            
+                            #path_to_be_evaluated.sitelist_direct = path_to_be_evaluated.sitelist_direct[:site_idx+1]
+                            #path_to_be_evaluated.sitelist = path_to_be_evaluated.sitelist_direct
+                            #path_to_be_evaluated.end = path_to_be_evaluated.sitelist_direct[-1]
+                            #block_codes_and_sites.remove(block_codes_and_sites[-1])
 
                         else:
                             print("indirect block")
                             
                             ## EXPERIMENTAL, swapping paths ##
-                            block_path = block_atom.main_path
                             
                             if block_path in self.members:
                                 
@@ -483,6 +521,7 @@ class Paths(object):
                                     pass
                                 
                                 else: # Here, the order of the paths is exchanged.
+                                    print("swapping paths")
                                     self.swapped_pairs.append(swapped_pair)
 
                                     self.atoms[k], self.atoms[block_atom_idx] = self.atoms[block_atom_idx], self.atoms[k]
@@ -500,13 +539,13 @@ class Paths(object):
                             ## EXPERIMENTAL END ##
 
                             # Try exchanging target sites between blocking atom and currently evaluated atom.
-                            subpath = Path(block_atom.site, path_to_be_evaluated.sitelist_direct[-1], is_subpath=True,
+                            subpath = Path(block_atom.site, self.target_sites[k], is_subpath=True,
                                             avoid_1nn=avoid_1nn, avoid_2nn=avoid_2nn)
                             subpath.determine_direct_path()
                             subpath.sitelist = subpath.sitelist_direct
                             N0 = len(subpath.sitelist)-1 
 
-                            path_proposed = Path(self.atoms[k].site, block_site, list_blockers=a_blocker_list,
+                            path_proposed = Path(self.atoms[k].site, self.target_sites[block_atom_idx], list_blockers=a_blocker_list, list_banned=a_banlist,
                                                     avoid_1nn=avoid_1nn, avoid_2nn=avoid_2nn)
                             path_proposed.determine_direct_path()
                             path_proposed.sitelist = path_proposed.sitelist_direct
@@ -519,6 +558,9 @@ class Paths(object):
 
                                 # Move atom in backend. 
                                 block_atom.move(subpath.sitelist[-1])
+
+                                # Set new main path.
+                                block_atom.main_path = path_proposed
                                 
                                 # Add subpath to path members.
                                 if self.debug_print:
