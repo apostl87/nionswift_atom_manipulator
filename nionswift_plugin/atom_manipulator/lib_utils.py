@@ -59,7 +59,7 @@ def plot_points(image, points, size=3, color="blue"):
     if points is None:
         return image
     color = (255, 165, 0)
-    points = np.round(points).astype(np.int)
+    points = np.round(points).astype(int)
     for point in points:
         try:
             image[draw.disk((point[0], point[1]), size, shape=image.shape)] = color
@@ -206,7 +206,7 @@ def add_listener_graphic_changed(manipulator, graphic):
         else:
             pass
     #graphic = manipulator.api.library.get_data_item_by_uuid(manipulator.processed_data_item.uuid).graphics[-1]
-    manipulator.listeners.append( graphic._graphic.graphic_changed_event.listen(check_site) )
+    manipulator.listeners.append( graphic._graphic.property_changed_event.listen(check_site) )
 
 
 # Element identification.
