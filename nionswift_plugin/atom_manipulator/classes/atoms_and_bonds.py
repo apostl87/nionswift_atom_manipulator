@@ -1,7 +1,12 @@
 import numpy as np
 import logging
 
-# Class reworked from C. Hofer
+
+# Reworked class
+#
+# The original works are
+# Christoph Hofer et al, 2D Mater. 5 045029 (2018). https://doi.org/10.1088/2053-1583/aaded7
+# Christoph Hofer et al, Appl. Phys. Lett. 114, 053102 (2019). https://doi.org/10.1063/1.5063449  
 class Site:    
     def __init__(self, x, y, z = 0, site_id = None):
         self.id = site_id
@@ -75,6 +80,7 @@ class Site:
         return "site ID " + str(a_id) + " with the coordinates " + str(a_coords)
 
 
+# Original work
 class Atom(object):
     
     def __init__(self, site, element, defined_by_user=False, main_path=None):
@@ -102,7 +108,12 @@ class Atom(object):
         a_coords = self.site.coords
         return "Atom at site ID " + str(a_id) + " with the coordinates " + str(a_coords)
 
-# Class reworked from C. Hofer  
+
+# Reworked class
+#
+# The original works are
+# Christoph Hofer et al, 2D Mater. 5 045029 (2018). https://doi.org/10.1088/2053-1583/aaded7
+# Christoph Hofer et al, Appl. Phys. Lett. 114, 053102 (2019). https://doi.org/10.1063/1.5063449   
 class Bond:
     
     def __init__(self, a1, a2, id_bond = None):
@@ -116,7 +127,12 @@ class Bond:
     def coords(self):
         return (self.site1.coords, self.site2.coords)
 
-# Class reworked from C. Hofer        
+
+# Reworked class
+#
+# The original works are
+# Christoph Hofer et al, 2D Mater. 5 045029 (2018). https://doi.org/10.1088/2053-1583/aaded7
+# Christoph Hofer et al, Appl. Phys. Lett. 114, 053102 (2019). https://doi.org/10.1063/1.5063449  
 class Bonds:
     # sites ... list of class members of "Atom"
     # members ... list of class members of "Bond"
